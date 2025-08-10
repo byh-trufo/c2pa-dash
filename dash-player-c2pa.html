@@ -1,0 +1,636 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DASH Video Player</title>
+
+    <!-- dash.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dashjs/4.7.4/dash.all.min.js"></script>
+
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
+        crossorigin="anonymous"></script>
+
+    <!-- video-js -->
+    <script src="https://vjs.zencdn.net/8.3.0/video.min.js"></script>
+    <link href="https://vjs.zencdn.net/8.3.0/video-js.css" rel="stylesheet" />
+
+
+    <!-- c2pa player CSS-->
+    <link href="./c2pa-player.css" rel="stylesheet" />
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #fff, #e0e0e0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .input-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"],
+        input[type="file"] {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            min-width: 250px;
+        }
+
+        input[type="text"]::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        input[type="text"]:focus,
+        input[type="file"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+
+        .player-section {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        #videoPlayer {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .controls-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .quality-selector {
+            margin: 15px 0;
+        }
+
+        select {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 14px;
+        }
+
+        .info-panel {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 5px 0;
+        }
+
+        .status.ready {
+            background: rgba(76, 175, 80, 0.8);
+            color: white;
+        }
+
+        .status.loading {
+            background: rgba(255, 193, 7, 0.8);
+            color: black;
+        }
+
+        .status.error {
+            background: rgba(244, 67, 54, 0.8);
+            color: white;
+        }
+
+        .sample-urls {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .sample-urls h4 {
+            margin-bottom: 10px;
+            color: #4CAF50;
+        }
+
+        .sample-url {
+            display: block;
+            color: #81C784;
+            text-decoration: none;
+            padding: 5px 0;
+            cursor: pointer;
+            font-size: 14px;
+            word-break: break-all;
+        }
+
+        .sample-url:hover {
+            color: #A5D6A7;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .input-group {
+                flex-direction: column;
+            }
+
+            input[type="text"],
+            input[type="file"] {
+                min-width: unset;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+    <script type="module">
+        import { c2pa_init } from './c2pa-dash-plugin.js';
+        import { C2PAPlayer } from './C2paPlayer/main.js';
+
+        let dashPlayer;
+        var video;
+        let isInitialized = false;
+        var c2paPlayer;
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function () {
+            initializePlayer();
+        });
+
+        function initializePlayer() {
+            video = document.querySelector("#videoPlayer");
+            if (!dashjs.supportsMediaSource()) {
+                updateStatus('error', 'Not Supported');
+                updateStreamInfo('DASH is not supported in this browser');
+                return;
+            }
+            dashPlayer = dashjs.MediaPlayer().create();
+            //setupC2PAPlayer();
+            setupEventListeners();
+            updateStatus('ready', 'Player Ready');
+            updateStreamInfo('DASH player initialized successfully');
+            isInitialized = true;
+        }
+
+        function setupC2PAPlayer(url) {
+            var options = { fluid: true, controlBar: { children: ['playToggle', 'progressControl', "currentTimeDisplay", 'volumePanel', 'pictureInPictureToggle', 'fullscreenToggle'] } };
+            var videoJsPlayer = videojs('videoPlayer', options);
+            c2paPlayer = new C2PAPlayer(videoJsPlayer, video);
+            c2paPlayer.initialize();
+            c2pa_init(dashPlayer, function (e) {
+                c2paPlayer.playbackUpdate(e.c2pa_status);
+            }).then(() => {
+                dashPlayer.initialize(video, url, true);
+            });
+
+        }
+        function setupEventListeners() {
+            // DASH player events
+            dashPlayer.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, onStreamInitialized);
+            dashPlayer.on(dashjs.MediaPlayer.events.PLAYBACK_STARTED, onPlaybackStarted);
+            dashPlayer.on(dashjs.MediaPlayer.events.PLAYBACK_PAUSED, onPlaybackPaused);
+            dashPlayer.on(dashjs.MediaPlayer.events.ERROR, onError);
+            dashPlayer.on(dashjs.MediaPlayer.events.MANIFEST_LOADED, onManifestLoaded);
+            dashPlayer.on(dashjs.MediaPlayer.events.STREAM_TEARDOWN_COMPLETE, onStreamTeardown);
+
+            // Video element events
+            video.addEventListener('loadstart', () => updateStatus('loading', 'Loading...'));
+            video.addEventListener('canplay', () => updateStatus('ready', 'Ready to Play'));
+            video.addEventListener('playing', () => updateStatus('ready', 'Playing'));
+            video.addEventListener('pause', () => updateStatus('ready', 'Paused'));
+            video.addEventListener('ended', () => updateStatus('ready', 'Ended'));
+            video.addEventListener('error', (e) => {
+                updateStatus('error', 'Video Error');
+                console.error('Video error:', e);
+            });
+
+            // File input handler
+            document.getElementById('mpdFile').addEventListener('change', handleFileSelect);
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', handleKeyboard);
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file && file.name.endsWith('.mpd')) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const mpdContent = e.target.result;
+                    // Create a blob URL for the MPD content
+                    const blob = new Blob([mpdContent], { type: 'application/dash+xml' });
+                    const mpdUrl = URL.createObjectURL(blob);
+
+                    document.getElementById('mpdUrl').value = `Local file: ${file.name}`;
+                    loadStreamFromUrl(mpdUrl);
+                };
+                reader.readAsText(file);
+            } else {
+                alert('Please select a valid MPD file.');
+            }
+        }
+
+        function loadSampleUrl(url) {
+            document.getElementById('mpdUrl').value = url;
+            loadStreamFromUrl(url);
+        }
+
+        function clearPlayer() {
+            if (dashPlayer && dashPlayer.isReady()) {
+                dashPlayer.reset();
+            }
+            document.getElementById('mpdUrl').value = '';
+            document.getElementById('mpdFile').value = '';
+            updateStatus('ready', 'Player Ready');
+            updateStreamInfo('Player cleared');
+            clearQualitySelector();
+            clearStats();
+            // Relaod the window for C2PA player to load new MPD correctly 
+            location.reload();
+        }
+
+        // Event handlers
+        function onStreamInitialized() {
+            updateStatus('ready', 'Stream Ready');
+            updateStreamInfo('Stream initialized successfully');
+            populateQualitySelector();
+            updateStats();
+        }
+
+        function onPlaybackStarted() {
+            updateStatus('ready', 'Playing');
+            updateStreamInfo('Playback started');
+            startStatsUpdater();
+        }
+
+        function onPlaybackPaused() {
+            updateStatus('ready', 'Paused');
+        }
+
+        function onError(error) {
+            updateStatus('error', 'Error');
+            updateStreamInfo('Error: ' + error.error);
+            console.error('DASH Error:', error);
+
+            // Check for CORS-related errors
+            if (error.error && (error.error.includes('CORS') || error.error.includes('NetworkError'))) {
+                showCORSHelp();
+            }
+        }
+
+        function showCORSHelp() {
+            const corsHelp = `
+            <div style="background: rgba(244, 67, 54, 0.1); border: 1px solid rgba(244, 67, 54, 0.5); border-radius: 8px; padding: 15px; margin: 10px 0;">
+                <h4 style="color: #f44336; margin-bottom: 10px;">🚫 CORS Error - Solutions:</h4>
+                <p style="margin: 5px 0;"><strong>1. Use HTTP Server (Recommended):</strong></p>
+                <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;">python -m http.server 8000</code>
+                <p style="margin: 5px 0;">Then open: <code>http://localhost:8000</code></p>
+                
+                <p style="margin: 10px 0 5px 0;"><strong>2. Use Online DASH Streams:</strong></p>
+                <p style="margin: 5px 0;">Click the sample URLs above to test with remote streams</p>
+                
+                <p style="margin: 10px 0 5px 0;"><strong>3. Chrome Dev Mode (Development Only):</strong></p>
+                <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;">chrome --disable-web-security --user-data-dir="/tmp/chrome_dev"</code>
+            </div>`;
+
+            document.getElementById('streamInfo').innerHTML = corsHelp + document.getElementById('streamInfo').innerHTML;
+        }
+
+        function onManifestLoaded(event) {
+            updateStreamInfo('Manifest loaded successfully');
+            const manifest = event.data;
+            if (manifest) {
+                updateStreamInfo(`Manifest loaded: ${manifest.url || 'Local file'}`);
+            }
+        }
+
+        function onStreamTeardown() {
+            updateStatus('ready', 'Stream Stopped');
+        }
+
+        // Quality control
+        function populateQualitySelector() {
+            const qualitySelect = document.getElementById('qualitySelect');
+            qualitySelect.innerHTML = '<option value="auto">Auto</option>';
+
+            try {
+                const bitrateInfos = dashPlayer.getBitrateInfoListFor('video');
+                bitrateInfos.forEach((info, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = `${info.height}p (${Math.round(info.bitrate / 1000)}kbps)`;
+                    qualitySelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error populating quality selector:', error);
+            }
+        }
+
+        function changeQuality() {
+            const qualitySelect = document.getElementById('qualitySelect');
+            const selectedValue = qualitySelect.value;
+
+            try {
+                if (selectedValue === 'auto') {
+                    dashPlayer.updateSettings({
+                        'streaming': {
+                            'abr': {
+                                'autoSwitchBitrate': {
+                                    'video': true
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    dashPlayer.updateSettings({
+                        'streaming': {
+                            'abr': {
+                                'autoSwitchBitrate': {
+                                    'video': false
+                                }
+                            }
+                        }
+                    });
+                    dashPlayer.setQualityFor('video', parseInt(selectedValue));
+                }
+            } catch (error) {
+                console.error('Error changing quality:', error);
+            }
+        }
+
+        function clearQualitySelector() {
+            document.getElementById('qualitySelect').innerHTML = '<option value="auto">Auto</option>';
+        }
+
+
+        function toggleMute() {
+            video.muted = !video.muted;
+        }
+
+        function handleKeyboard(event) {
+            if (document.activeElement.tagName === 'INPUT') return;
+
+            switch (event.key) {
+                case ' ':
+                    event.preventDefault();
+                    togglePlayPause();
+                    break;
+                case 'ArrowLeft':
+                    seekTo(-10);
+                    break;
+                case 'ArrowRight':
+                    seekTo(10);
+                    break;
+                case 'm':
+                    toggleMute();
+                    break;
+            }
+        }
+
+        // UI Updates
+        function updateStatus(type, message) {
+            const statusElement = document.getElementById('playerStatus');
+            statusElement.className = `status ${type}`;
+            statusElement.textContent = message;
+        }
+
+        function updateStreamInfo(message) {
+            const infoElement = document.getElementById('streamInfo');
+            const timestamp = new Date().toLocaleTimeString();
+            infoElement.innerHTML = `<div>[${timestamp}] ${message}</div>` + infoElement.innerHTML;
+
+            // Keep only last 10 messages
+            const messages = infoElement.children;
+            while (messages.length > 10) {
+                infoElement.removeChild(messages[messages.length - 1]);
+            }
+        }
+
+        function updateStats() {
+            if (!dashPlayer || !dashPlayer.isReady()) return;
+
+            try {
+                const statsElement = document.getElementById('playerStats');
+                const currentQuality = dashPlayer.getQualityFor('video');
+                const bitrateInfo = dashPlayer.getBitrateInfoListFor('video')[currentQuality];
+
+                let stats = '<h4>Stream Statistics:</h4>';
+                if (bitrateInfo) {
+                    stats += `<div>Current Quality: ${bitrateInfo.height}p @ ${Math.round(bitrateInfo.bitrate / 1000)}kbps</div>`;
+                }
+                stats += `<div>Current Time: ${video.currentTime.toFixed(1)}s</div>`;
+                stats += `<div>Duration: ${video.duration ? video.duration.toFixed(1) + 's' : 'Unknown'}</div>`;
+                stats += `<div>Buffered: ${video.buffered.length > 0 ? video.buffered.end(0).toFixed(1) + 's' : '0s'}</div>`;
+
+                statsElement.innerHTML = stats;
+            } catch (error) {
+                console.error('Error updating stats:', error);
+            }
+        }
+
+        function clearStats() {
+            document.getElementById('playerStats').innerHTML = '';
+        }
+
+        function startStatsUpdater() {
+            setInterval(updateStats, 1000);
+        }
+        function loadStream() {
+            const mpdUrl = document.getElementById('mpdUrl').value.trim();
+
+            if (!mpdUrl) {
+                alert('Please enter an MPD URL or select a local file.');
+                return;
+            }
+
+            if (!isInitialized) {
+                alert('Player not initialized. Please refresh the page.');
+                return;
+            }
+
+            loadStreamFromUrl(mpdUrl);
+        }
+
+        function loadStreamFromUrl(url) {
+            try {
+                updateStatus('loading', 'Loading Stream...');
+                updateStreamInfo('Loading manifest from: ' + url);
+
+                // Check for CORS issues
+                if (window.location.protocol === 'file:' && !url.startsWith('blob:')) {
+                    updateStatus('error', 'CORS Error');
+                    updateStreamInfo('CORS Error: Cannot load external URLs from file:// protocol');
+                    showCORSHelp();
+                    return;
+                }
+
+                // Reset player
+                if (dashPlayer.isReady()) {
+                    dashPlayer.reset();
+                }
+                setupC2PAPlayer(url);
+            } catch (error) {
+                updateStatus('error', 'Load Error');
+                updateStreamInfo('Error loading stream: ' + error.message);
+                console.error('Load stream error:', error);
+
+                // Check if it's a CORS error
+                if (error.message.includes('CORS') || error.message.includes('Cross-Origin')) {
+                    showCORSHelp();
+                }
+            }
+        }
+
+        const loadStreamButton = document.getElementById('loadStreamBtn');
+        loadStreamButton.addEventListener('click', loadStream);
+
+        const clearPlayerButton = document.getElementById('clearPlayerBtn');
+        clearPlayerButton.addEventListener('click', clearPlayer);
+
+    </script>
+
+</head>
+
+<body>
+    <div class="container">
+        <h1>🎬 DASH Video Player</h1>
+
+        <div class="input-section">
+            <div class="input-group">
+                <input type="text" id="mpdUrl" placeholder="Enter MPD URL or select local file...">
+                <input type="file" id="mpdFile" accept=".mpd" title="Select local MPD file">
+            </div>
+            <br>
+            <div>
+                https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists/test-itn-signed/c2pa-test.mpd
+            </div>
+            <br>
+            <div class="input-group">
+                <button class="btn btn-primary" id="loadStreamBtn">Load Stream</button>
+                <button class="btn btn-secondary" id="clearPlayerBtn">Clear</button>
+            </div>
+            <div class="player-section">
+                <video id="videoPlayer" class="video-js" controls="true">
+                    Your browser does not support the video element.
+                </video>
+            </div>
+
+            <div class="controls-section">
+                <div class="quality-selector">
+                    <label for="qualitySelect">Quality:</label>
+                    <select id="qualitySelect" onchange="changeQuality()">
+                        <option value="auto">Auto</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <h3>Player Status: <span id="playerStatus" class="status loading">Ready</span></h3>
+                <div id="streamInfo"></div>
+                <div id="playerStats"></div>
+            </div>
+
+        </div>
+</body>
+
+</html>

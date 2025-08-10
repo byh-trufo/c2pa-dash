@@ -1,0 +1,7 @@
+# data files
+assets
+output
+
+# tool files
+C2paPlayer
+packager-*
