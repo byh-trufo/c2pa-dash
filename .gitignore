@@ -6,3 +6,6 @@ output
 # tool files
 C2paPlayer
 packager-*
+
+# dev files
+_*.sh
