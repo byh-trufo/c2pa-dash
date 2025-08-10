@@ -136,3 +136,6 @@ echo "Moved ${COUNT} file fragments to ${OUTPUT_DIR}"
 
 # removing ./tmp-c2pa
 rm -r tmp-c2pa
+
+# checking
+c2patool ${OUTPUT_DIR}/seg_track1_init.mp4 fragment --fragments_glob 'seg_track1_*[0-9].m4s'
