@@ -10,7 +10,7 @@
 PACKAGER_CMD="./packager-linux-x64"
 
 # Duration of each segment in seconds
-SEGMENT_DURATION=1
+SEGMENT_DURATION=3
 
 
 # --- C2PA Configuration ---
@@ -31,9 +31,9 @@ TIMESTAMP_URL="http://timestamp.digicert.com"
 
 # --- MPD ---
 
-# set INPUT_FILENAME to cindy_talk_short.mp4 if not provided
+# set INPUT_FILENAME to golden.mp4 if not provided
 if [ -z "$1" ]; then
-  INPUT_FILENAME="cindy_talk_short.mp4"
+  INPUT_FILENAME="golden.mp4"
 else
   INPUT_FILENAME="$1"
 fi
