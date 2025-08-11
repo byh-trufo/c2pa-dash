@@ -48,10 +48,6 @@ if [ -d "$OUTPUT_DIR" ]; then
 fi
 
 OUTPUT_MPD="${OUTPUT_DIR}/av.mpd"
-# INIT_VIDEO="${OUTPUT_DIR}/video_init.mp4"
-# INIT_AUDIO="${OUTPUT_DIR}/audio_init.mp4"
-# SEG_VIDEO="${OUTPUT_DIR}/video_\$Number\$.m4s"
-# SEG_AUDIO="${OUTPUT_DIR}/audio_\$Number\$.m4s"
 
 # this works!!!
 MP4Box -dash $((SEGMENT_DURATION * 1000)) -profile onDemand \
