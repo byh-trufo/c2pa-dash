@@ -215,10 +215,12 @@ class C2PAManifestDisplay {
             // Raw manifest data (collapsible)
             html += `<div class="detail-item">
                 <span class="detail-label">Raw Manifest:</span>
-                <button class="toggle-raw-btn" onclick="window.c2paDisplay.toggleRawManifest('${mediaType}')">
-                    Show Raw Data
-                </button>
-                <pre class="raw-manifest" id="raw-${mediaType}" style="display: none;">${JSON.stringify(manifest, null, 2)}</pre>
+                <div class="detail-value">
+                    <button class="toggle-raw-btn" onclick="window.c2paDisplay.toggleRawManifest('${mediaType}')">
+                        Show Raw Data
+                    </button>
+                    <pre class="raw-manifest" id="raw-${mediaType}" style="display: none;">${JSON.stringify(manifest, null, 2)}</pre>
+                </div>
             </div>`;
         }
 
@@ -361,7 +363,8 @@ class C2PAManifestDisplay {
 
             .c2pa-header h3 {
                 margin: 0;
-                color: #4CAF50;
+                color: white;
+                font-weight: bold;
                 font-size: 1.2rem;
             }
 
@@ -430,7 +433,8 @@ class C2PAManifestDisplay {
             }
 
             .manifest-section h4 {
-                color: #81C784;
+                color: white;
+                font-weight: bold;
                 margin-bottom: 10px;
                 font-size: 1.1rem;
             }
@@ -469,7 +473,8 @@ class C2PAManifestDisplay {
             }
 
             .media-type-section h5 {
-                color: #A5D6A7;
+                color: white;
+                font-weight: bold;
                 margin-bottom: 10px;
                 font-size: 1rem;
             }
@@ -478,18 +483,24 @@ class C2PAManifestDisplay {
                 display: flex;
                 margin-bottom: 8px;
                 align-items: flex-start;
+                gap: 10px;
             }
 
             .detail-label {
                 font-weight: bold;
                 min-width: 120px;
                 color: #E0E0E0;
-                margin-right: 10px;
+                margin-right: 0;
+                display: flex;
+                align-items: center;
             }
 
             .detail-value {
                 flex: 1;
                 word-break: break-word;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
             }
 
             .detail-value.success {
@@ -549,7 +560,8 @@ class C2PAManifestDisplay {
                 border-radius: 4px;
                 cursor: pointer;
                 font-size: 12px;
-                margin-top: 5px;
+                margin-bottom: 10px;
+                align-self: flex-start;
             }
 
             .toggle-raw-btn:hover {
@@ -561,12 +573,13 @@ class C2PAManifestDisplay {
                 border: 1px solid rgba(255, 255, 255, 0.2);
                 border-radius: 6px;
                 padding: 10px;
-                margin-top: 10px;
+                margin-top: 0;
                 color: #E0E0E0;
                 font-size: 12px;
                 overflow-x: auto;
                 max-height: 300px;
                 overflow-y: auto;
+                width: 100%;
             }
 
             @media (max-width: 768px) {
@@ -578,11 +591,16 @@ class C2PAManifestDisplay {
 
                 .detail-item {
                     flex-direction: column;
+                    gap: 5px;
                 }
 
                 .detail-label {
                     min-width: unset;
                     margin-bottom: 5px;
+                }
+                
+                .detail-value {
+                    align-items: stretch;
                 }
             }
         `;

@@ -606,14 +606,6 @@
         const clearPlayerButton = document.getElementById('clearPlayerBtn');
         clearPlayerButton.addEventListener('click', clearPlayer);
 
-        const demoC2PAButton = document.getElementById('demoC2PABtn');
-        demoC2PAButton.addEventListener('click', function() {
-            if (c2paManifestDisplay) {
-                c2paManifestDisplay.showDemo();
-                updateStreamInfo('C2PA Display Demo - showing sample manifest data');
-            }
-        });
-
     </script>
 
 </head>
@@ -635,7 +627,6 @@
             <div class="input-group">
                 <button class="btn btn-primary" id="loadStreamBtn">Load Stream</button>
                 <button class="btn btn-secondary" id="clearPlayerBtn">Clear</button>
-                <button class="btn btn-secondary" id="demoC2PABtn">Demo C2PA Display</button>
             </div>
             <div class="player-section">
                 <video id="videoPlayer" class="video-js" controls="true">
