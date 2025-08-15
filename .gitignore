@@ -1,6 +1,6 @@
 # data files
-assets
 certs
+input
 output
 
 # tool files

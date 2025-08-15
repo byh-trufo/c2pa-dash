@@ -38,7 +38,7 @@ else
   INPUT_FILENAME="$1"
 fi
 
-INPUT_MP4="assets/${INPUT_FILENAME}"
+INPUT_MP4="input/${INPUT_FILENAME}"
 BASE_NAME=$(basename "$INPUT_FILENAME" .mp4)
 OUTPUT_DIR="output/$BASE_NAME"
 
