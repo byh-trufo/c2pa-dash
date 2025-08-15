@@ -202,7 +202,7 @@ class C2PAManifestDisplay {
             </div>
             <div class="manifest-chain-summary">
                 <span class="manifest-count">
-                    ${manifestCount} manifest${manifestCount !== 1 ? 's' : ''} in chain
+                    ${manifestCount} manifest${manifestCount !== 1 ? 's' : ''} in chain.
                 </span>
             </div>
             <div class="manifest-chain-details" style="display: none;">`;
