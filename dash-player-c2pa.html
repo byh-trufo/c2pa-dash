@@ -87,34 +87,29 @@
 
         .logo {
             display: flex;
-            align-items: center;
-            gap: 0.75rem;
+            flex-direction: column;
+            gap: 0.125rem;
             font-size: 1.25rem;
             font-weight: 600;
             color: var(--neutral-900);
         }
 
-        .logo-icon {
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-            font-size: 14px;
+        .demo-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--neutral-900);
+        }
+
+        .demo-venue {
+            font-size: 0.875rem;
+            font-weight: 400;
+            color: var(--neutral-600);
         }
 
         .header-badge {
-            background: var(--neutral-100);
-            color: var(--neutral-600);
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            border: 1px solid var(--neutral-200);
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--neutral-900);
         }
 
         /* Main Content */
@@ -131,7 +126,7 @@
         .input-section {
             background: white;
             border-radius: 12px;
-            padding: 1.5rem;
+            padding: 1.5rem 1.5rem 1rem 1.5rem;
             border: 1px solid var(--neutral-200);
             box-shadow: var(--shadow-sm);
         }
@@ -237,6 +232,68 @@
         .btn-secondary:hover {
             background: var(--neutral-50);
             border-color: var(--neutral-400);
+        }
+
+        .btn-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 300px;
+            box-shadow: var(--shadow-lg);
+            border-radius: 8px;
+            border: 1px solid var(--neutral-200);
+            z-index: 1000;
+            top: 100%;
+            left: 0;
+            margin-top: 0.25rem;
+        }
+
+        .dropdown-content.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            border-bottom: 1px solid var(--neutral-100);
+            font-size: 0.875rem;
+            color: var(--neutral-700);
+            transition: background-color 0.2s;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--neutral-50);
+        }
+
+        .dropdown-item.file-option {
+            border-top: 1px solid var(--neutral-200);
+            color: var(--primary-blue);
+            font-weight: 500;
+        }
+
+        /* Input animation */
+        .input-field input.updated {
+            animation: inputUpdate 0.8s ease-out;
+        }
+
+        @keyframes inputUpdate {
+            0% {
+                background-color: rgba(16, 185, 129, 0.1);
+                border-color: var(--success-green);
+            }
+            100% {
+                background-color: white;
+                border-color: var(--neutral-300);
+            }
         }
 
         /* Player Section */
@@ -441,6 +498,17 @@
         var c2paPlayer;
         var c2paManifestDisplay;
 
+        // Sample URLs enum
+        class SampleUrls {
+            static IBC_2025_DEMO = 'https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists/test-itn-signed/c2pa-test.mpd';
+            
+            static getAll() {
+                return [
+                    { url: this.IBC_2025_DEMO, name: 'IBC 2025 Demo Content', description: 'Signed DASH stream with C2PA metadata' }
+                ];
+            }
+        }
+
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function () {
             initializePlayer();
@@ -448,7 +516,36 @@
             c2paManifestDisplay = new C2PAManifestDisplay('c2paManifestContainer');
             // Make it globally accessible for button callbacks
             window.c2paDisplay = c2paManifestDisplay;
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                const dropdown = document.getElementById('demoDropdown');
+                const button = document.getElementById('selectDemoBtn');
+                if (!button.contains(event.target) && !dropdown.contains(event.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
         });
+
+        // Make functions globally accessible
+        window.toggleDropdown = function() {
+            const dropdown = document.getElementById('demoDropdown');
+            dropdown.classList.toggle('show');
+        };
+
+        window.selectSampleUrl = function(url) {
+            const input = document.getElementById('mpdUrl');
+            input.value = url;
+            
+            // Add animation class
+            input.classList.add('updated');
+            setTimeout(() => {
+                input.classList.remove('updated');
+            }, 800);
+            
+            // Close dropdown
+            document.getElementById('demoDropdown').classList.remove('show');
+        };
 
         function initializePlayer() {
             video = document.querySelector("#videoPlayer");
@@ -801,11 +898,11 @@
     <!-- Header -->
     <header class="header">
         <div class="header-content">
+            <div class="header-badge">C2PA DASH Player</div>
             <div class="logo">
-                <div class="logo-icon">C2</div>
-                <span>C2PA DASH Player</span>
+                <div class="demo-title">Stamping Your Content</div>
+                <div class="demo-venue">IBC 2025 Accelerator</div>
             </div>
-            <div class="header-badge">IBC 2025 Accelerator</div>
         </div>
     </header>
 
@@ -825,13 +922,32 @@
                     <div class="input-field">
                         <input type="text" id="mpdUrl" placeholder="Enter DASH manifest URL...">
                     </div>
-                    <div class="input-field">
-                        <input type="file" id="mpdFile" accept=".mpd" title="Select local MPD file">
+                    <div class="btn-dropdown">
+                        <button class="btn btn-secondary" id="selectDemoBtn" onclick="toggleDropdown()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14,2 14,8 20,8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <line x1="10" y1="9" x2="8" y2="9"/>
+                            </svg>
+                            Select Demo File
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6,9 12,15 18,9"/>
+                            </svg>
+                        </button>
+                        <div class="dropdown-content" id="demoDropdown">
+                            <div class="dropdown-item" onclick="selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists/test-itn-signed/c2pa-test.mpd')">
+                                IBC 2025 Demo Content
+                                <div style="font-size: 0.75rem; color: var(--neutral-500); margin-top: 0.25rem;">Signed DASH stream with C2PA metadata</div>
+                            </div>
+                            <div class="dropdown-item file-option" onclick="document.getElementById('mpdFile').click()">
+                                Browse Local Files
+                                <div style="font-size: 0.75rem; color: var(--neutral-500); margin-top: 0.25rem;">Select MPD file from your device</div>
+                            </div>
+                        </div>
+                        <input type="file" id="mpdFile" accept=".mpd" style="display: none;" title="Select local MPD file">
                     </div>
-                </div>
-                
-                <div class="sample-url">
-                    Sample: https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists/test-itn-signed/c2pa-test.mpd
                 </div>
                 
                 <div class="btn-group">
