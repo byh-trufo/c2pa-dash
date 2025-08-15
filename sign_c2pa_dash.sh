@@ -16,14 +16,14 @@ SEGMENT_DURATION=3
 # --- C2PA Configuration ---
 
 # Set the paths to your C2PA signing certificate and private key.
-CERT_FILE="certs/ibc_demo.crt"
-KEY_FILE="certs/ibc_demo.key"
+CERT_FILE="certs/my_chain.crt"
+KEY_FILE="certs/my_key.pem"
 
 # Set the author name to be included in the C2PA metadata.
 AUTHOR_NAME="Trufo at IBC"
 
 # Set the signing algorithm. Common values are 'ps256', 'ps384', 'es256', 'ed25519'.
-SIGNING_ALG="ed25519"
+SIGNING_ALG="es256"
 
 # Set the Timestamp Authority URL. DigiCert provides a free one.
 TIMESTAMP_URL="http://timestamp.digicert.com"
@@ -120,10 +120,18 @@ done
 
 # replace the .mp4 and .m4s files in OUTPUT_DIR with the c2pa versions
 # keep track of the number of files moved
-COUNT = 0
+COUNT=0
 for C2PA_FILE in tmp-c2pa/${BASE_NAME}/*; do
     # if ends in mp4 or m4s
     if [[ $C2PA_FILE == *.mp4 || $C2PA_FILE == *.m4s ]]; then
+        if [[ $C2PA_FILE == *seg* ]]; then
+            # the file format is seg_trackX_[0-9].m4s -- check that the number [0-9] is not greater than 5000000
+            SEGMENT_NUMBER=$(echo "$C2PA_FILE" | grep -oP '(?<=seg_track[0-9]_)[0-9]+(?=\.m4s)')
+            if [[ $SEGMENT_NUMBER -gt 5000000 ]]; then
+                echo "Skipping file with segment number > 5000000: ${C2PA_FILE}"
+                continue
+            fi
+        fi
         mv "${C2PA_FILE}" "${OUTPUT_DIR}/$(basename "$C2PA_FILE")"
     fi
     COUNT=$((COUNT + 1))
@@ -134,4 +142,4 @@ echo "Moved ${COUNT} file fragments to ${OUTPUT_DIR}"
 rm -r tmp-c2pa
 
 # checking
-c2patool ${OUTPUT_DIR}/seg_track1_init.mp4 fragment --fragments_glob 'seg_track1_*[0-9].m4s'
+# c2patool ${OUTPUT_DIR}/seg_track1_init.mp4 fragment --fragments_glob 'seg_track1_*[0-9].m4s'
