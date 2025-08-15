@@ -21,23 +21,40 @@ class C2PAManifestDisplay {
      */
     initializeDisplay() {
         this.container.innerHTML = `
-            <div class="c2pa-display-container">
+            <section class="c2pa-display-container">
                 <div class="c2pa-header">
-                    <h3>🔐 C2PA Content Authenticity</h3>
+                    <h2 class="section-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 12l2 2 4-4"/>
+                            <path d="M21 12c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z"/>
+                            <path d="M3 12c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z"/>
+                            <path d="M12 3c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z"/>
+                            <path d="M12 21c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z"/>
+                        </svg>
+                        <span class="cr-badge">℗</span> Content Authenticity
+                    </h2>
                     <button class="c2pa-toggle-btn" onclick="window.c2paDisplay.toggleExpanded()">
                         <span class="toggle-text">Show Details</span>
+                        <svg class="toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6,9 12,15 18,9"/>
+                        </svg>
                     </button>
                 </div>
                 <div class="c2pa-status">
-                    <span class="status-indicator waiting">⏳</span>
+                    <div class="status-indicator waiting">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 6v6l4 2"/>
+                        </svg>
+                    </div>
                     <span class="status-text">Waiting for content verification...</span>
                 </div>
                 <div class="c2pa-details" style="display: none;">
                     <div class="c2pa-manifest-content">
-                        <p>No manifest data available</p>
+                        <p class="no-data-message">No manifest data available</p>
                     </div>
                 </div>
-            </div>
+            </section>
         `;
         
         this.addStyles();
@@ -77,15 +94,30 @@ class C2PAManifestDisplay {
         
         if (status.verified === true) {
             statusIndicator.classList.add('verified');
-            statusIndicator.textContent = '✅';
+            statusIndicator.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 12l2 2 4-4"/>
+                    <circle cx="12" cy="12" r="10"/>
+                </svg>
+            `;
             statusText.textContent = 'Content authenticity verified';
         } else if (status.verified === false) {
             statusIndicator.classList.add('failed');
-            statusIndicator.textContent = '❌';
+            statusIndicator.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="15" y1="9" x2="9" y2="15"/>
+                    <line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>
+            `;
             statusText.textContent = 'Content authenticity verification failed';
         } else {
             statusIndicator.classList.add('pending');
-            statusIndicator.textContent = '🔄';
+            statusIndicator.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin">
+                    <path d="M21 12a9 9 0 11-6.219-8.56"/>
+                </svg>
+            `;
             statusText.textContent = 'Content verification in progress...';
         }
     }
@@ -244,17 +276,20 @@ class C2PAManifestDisplay {
         this.isExpanded = !this.isExpanded;
         const detailsDiv = this.container.querySelector('.c2pa-details');
         const toggleText = this.container.querySelector('.toggle-text');
+        const toggleBtn = this.container.querySelector('.c2pa-toggle-btn');
         
-        if (detailsDiv && toggleText) {
+        if (detailsDiv && toggleText && toggleBtn) {
             if (this.isExpanded) {
                 detailsDiv.style.display = 'block';
                 toggleText.textContent = 'Hide Details';
+                toggleBtn.setAttribute('aria-expanded', 'true');
                 if (this.currentManifestData) {
                     this.updateManifestDetails(this.currentManifestData);
                 }
             } else {
                 detailsDiv.style.display = 'none';
                 toggleText.textContent = 'Show Details';
+                toggleBtn.setAttribute('aria-expanded', 'false');
             }
         }
     }
@@ -288,18 +323,22 @@ class C2PAManifestDisplay {
                     verified: true,
                     manifest: {
                         manifestStore: {
-                            title: "Sample C2PA Protected Content",
+                            title: "IBC 2025 Accelerator Demo Content",
                             format: "video/mp4",
-                            instanceId: "12345678-1234-5678-9abc-123456789abc",
+                            instanceId: "ibc2025-c2pa-demo-12345678-1234-5678-9abc-123456789abc",
                             validationStatus: [], // No validation issues for video
                             claims: [
                                 {
                                     label: "c2pa.content_credentials",
-                                    signature: "RS256 signature present"
+                                    signature: "Content Authenticity Initiative verified signature"
                                 },
                                 {
                                     label: "c2pa.creator",
-                                    signature: "Content created by Demo Studio"
+                                    signature: "Created by IBC Accelerator Programme"
+                                },
+                                {
+                                    label: "c2pa.hash",
+                                    signature: "SHA-256 content hash verified"
                                 }
                             ]
                         }
@@ -310,13 +349,13 @@ class C2PAManifestDisplay {
                     verified: false,
                     manifest: {
                         manifestStore: {
-                            title: "Sample Audio Track",
+                            title: "Demo Audio Track",
                             format: "audio/mp4",
-                            instanceId: "87654321-4321-8765-dcba-987654321cba",
+                            instanceId: "ibc2025-audio-87654321-4321-8765-dcba-987654321cba",
                             validationStatus: [
                                 {
                                     code: "signing_credential.untrusted",
-                                    explanation: "The signing credential is not trusted"
+                                    explanation: "The signing credential chain could not be validated against known trusted authorities"
                                 }
                             ],
                             claims: []
@@ -345,262 +384,401 @@ class C2PAManifestDisplay {
         styleSheet.id = 'c2pa-display-styles';
         styleSheet.textContent = `
             .c2pa-display-container {
-                background: rgba(255, 255, 255, 0.1);
-                border-radius: 15px;
-                padding: 20px;
-                margin: 20px 0;
-                border: 1px solid rgba(255, 255, 255, 0.2);
+                background: white;
+                border-radius: 12px;
+                border: 1px solid var(--neutral-200);
+                box-shadow: var(--shadow-sm);
+                margin-top: 2rem;
+                overflow: hidden;
             }
 
             .c2pa-header {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                margin-bottom: 15px;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-                padding-bottom: 10px;
+                padding: 1.5rem;
+                border-bottom: 1px solid var(--neutral-200);
+                background: linear-gradient(135deg, var(--cr-blue) 0%, var(--primary-blue) 100%);
+                color: white;
             }
 
-            .c2pa-header h3 {
+            .c2pa-header .section-title {
                 margin: 0;
                 color: white;
-                font-weight: bold;
-                font-size: 1.2rem;
+                font-weight: 600;
+                font-size: 1.125rem;
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+            }
+
+            .cr-badge {
+                background: rgba(255, 255, 255, 0.2);
+                color: white;
+                padding: 0.25rem 0.5rem;
+                border-radius: 6px;
+                font-size: 0.875rem;
+                font-weight: 700;
+                border: 1px solid rgba(255, 255, 255, 0.3);
             }
 
             .c2pa-toggle-btn {
                 background: rgba(255, 255, 255, 0.1);
-                border: 1px solid rgba(255, 255, 255, 0.3);
+                border: 1px solid rgba(255, 255, 255, 0.2);
                 color: white;
-                padding: 8px 16px;
+                padding: 0.5rem 1rem;
                 border-radius: 8px;
                 cursor: pointer;
-                font-size: 14px;
-                transition: all 0.3s ease;
+                font-size: 0.875rem;
+                font-weight: 500;
+                transition: all 0.2s;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
             }
 
             .c2pa-toggle-btn:hover {
                 background: rgba(255, 255, 255, 0.2);
-                border-color: rgba(255, 255, 255, 0.5);
+                border-color: rgba(255, 255, 255, 0.4);
+                transform: translateY(-1px);
+            }
+
+            .toggle-icon {
+                transition: transform 0.2s;
+            }
+
+            .c2pa-toggle-btn[aria-expanded="true"] .toggle-icon {
+                transform: rotate(180deg);
             }
 
             .c2pa-status {
                 display: flex;
                 align-items: center;
-                gap: 10px;
-                font-size: 16px;
-                margin-bottom: 15px;
+                gap: 1rem;
+                padding: 1.5rem;
+                background: var(--neutral-50);
+                border-bottom: 1px solid var(--neutral-200);
             }
 
             .status-indicator {
-                font-size: 20px;
-                padding: 5px;
-                border-radius: 50%;
-                display: inline-flex;
+                display: flex;
                 align-items: center;
                 justify-content: center;
-                min-width: 30px;
-                min-height: 30px;
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                flex-shrink: 0;
             }
 
             .status-indicator.verified {
-                background: rgba(76, 175, 80, 0.2);
-                border: 2px solid #4CAF50;
+                background: rgb(16 185 129 / 0.1);
+                color: var(--success-green);
+                border: 2px solid var(--success-green);
             }
 
             .status-indicator.failed {
-                background: rgba(244, 67, 54, 0.2);
-                border: 2px solid #f44336;
+                background: rgb(239 68 68 / 0.1);
+                color: var(--error-red);
+                border: 2px solid var(--error-red);
             }
 
             .status-indicator.pending {
-                background: rgba(255, 193, 7, 0.2);
-                border: 2px solid #FFC107;
+                background: rgb(245 158 11 / 0.1);
+                color: var(--warning-amber);
+                border: 2px solid var(--warning-amber);
             }
 
             .status-indicator.waiting {
-                background: rgba(158, 158, 158, 0.2);
-                border: 2px solid #9E9E9E;
+                background: rgb(148 163 184 / 0.1);
+                color: var(--neutral-600);
+                border: 2px solid var(--neutral-300);
+            }
+
+            .status-text {
+                font-size: 0.9375rem;
+                font-weight: 500;
+                color: var(--neutral-700);
             }
 
             .c2pa-details {
-                border-top: 1px solid rgba(255, 255, 255, 0.2);
-                padding-top: 15px;
+                border-top: 1px solid var(--neutral-200);
+            }
+
+            .c2pa-manifest-content {
+                padding: 1.5rem;
+            }
+
+            .no-data-message {
+                color: var(--neutral-600);
+                font-style: italic;
+                text-align: center;
+                padding: 2rem;
+                margin: 0;
             }
 
             .manifest-section {
-                margin-bottom: 20px;
+                margin-bottom: 2rem;
+            }
+
+            .manifest-section:last-child {
+                margin-bottom: 0;
             }
 
             .manifest-section h4 {
-                color: white;
-                font-weight: bold;
-                margin-bottom: 10px;
-                font-size: 1.1rem;
+                color: var(--neutral-900);
+                font-weight: 600;
+                margin-bottom: 1rem;
+                font-size: 1rem;
+                padding-bottom: 0.5rem;
+                border-bottom: 1px solid var(--neutral-200);
             }
 
             .verification-status {
-                padding: 10px;
+                padding: 1rem 1.5rem;
                 border-radius: 8px;
-                font-weight: bold;
+                font-weight: 600;
                 text-align: center;
-                margin-bottom: 15px;
+                margin-bottom: 1.5rem;
+                font-size: 0.875rem;
             }
 
             .verification-status.success {
-                background: rgba(76, 175, 80, 0.2);
-                border: 1px solid #4CAF50;
-                color: #4CAF50;
+                background: rgb(16 185 129 / 0.1);
+                border: 1px solid var(--success-green);
+                color: var(--success-green);
             }
 
             .verification-status.error {
-                background: rgba(244, 67, 54, 0.2);
-                border: 1px solid #f44336;
-                color: #f44336;
+                background: rgb(239 68 68 / 0.1);
+                border: 1px solid var(--error-red);
+                color: var(--error-red);
             }
 
             .verification-status.pending {
-                background: rgba(255, 193, 7, 0.2);
-                border: 1px solid #FFC107;
-                color: #FFC107;
+                background: rgb(245 158 11 / 0.1);
+                border: 1px solid var(--warning-amber);
+                color: var(--warning-amber);
             }
 
             .media-type-section {
-                background: rgba(0, 0, 0, 0.2);
-                border-radius: 10px;
-                padding: 15px;
-                margin-bottom: 15px;
+                background: var(--neutral-50);
+                border: 1px solid var(--neutral-200);
+                border-radius: 8px;
+                padding: 1.5rem;
+                margin-bottom: 1rem;
+            }
+
+            .media-type-section:last-child {
+                margin-bottom: 0;
             }
 
             .media-type-section h5 {
-                color: white;
-                font-weight: bold;
-                margin-bottom: 10px;
-                font-size: 1rem;
+                color: var(--neutral-900);
+                font-weight: 600;
+                margin-bottom: 1rem;
+                font-size: 0.9375rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .media-type-section h5::before {
+                content: '';
+                width: 8px;
+                height: 8px;
+                background: var(--primary-blue);
+                border-radius: 50%;
             }
 
             .detail-item {
-                display: flex;
-                margin-bottom: 8px;
-                align-items: flex-start;
-                gap: 10px;
+                display: grid;
+                grid-template-columns: 140px 1fr;
+                gap: 1rem;
+                margin-bottom: 1rem;
+                align-items: start;
+            }
+
+            .detail-item:last-child {
+                margin-bottom: 0;
             }
 
             .detail-label {
-                font-weight: bold;
-                min-width: 120px;
-                color: #E0E0E0;
-                margin-right: 0;
+                font-weight: 500;
+                color: var(--neutral-700);
+                font-size: 0.8125rem;
                 display: flex;
                 align-items: center;
+                gap: 0.5rem;
             }
 
             .detail-value {
-                flex: 1;
                 word-break: break-word;
                 display: flex;
                 flex-direction: column;
-                align-items: flex-start;
+                gap: 0.5rem;
+                font-size: 0.875rem;
+                color: var(--neutral-800);
             }
 
             .detail-value.success {
-                color: #4CAF50;
+                color: var(--success-green);
+                font-weight: 500;
             }
 
             .detail-value.error {
-                color: #f44336;
+                color: var(--error-red);
+                font-weight: 500;
             }
 
             .detail-value.code {
-                font-family: 'Courier New', monospace;
-                background: rgba(0, 0, 0, 0.3);
-                padding: 2px 6px;
-                border-radius: 4px;
-                font-size: 12px;
+                font-family: 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
+                background: var(--neutral-100);
+                padding: 0.5rem;
+                border-radius: 6px;
+                font-size: 0.75rem;
+                border: 1px solid var(--neutral-200);
             }
 
             .validation-issues {
-                background: rgba(244, 67, 54, 0.1);
-                border: 1px solid rgba(244, 67, 54, 0.3);
+                background: rgb(239 68 68 / 0.05);
+                border: 1px solid rgb(239 68 68 / 0.2);
                 border-radius: 8px;
-                padding: 10px;
-                margin-top: 5px;
+                padding: 1rem;
             }
 
             .validation-issue {
-                margin-bottom: 10px;
-                padding: 8px;
-                background: rgba(0, 0, 0, 0.2);
-                border-radius: 4px;
-                font-size: 14px;
+                margin-bottom: 0.75rem;
+                padding: 0.75rem;
+                background: white;
+                border-radius: 6px;
+                font-size: 0.8125rem;
+                border: 1px solid rgb(239 68 68 / 0.1);
+            }
+
+            .validation-issue:last-child {
+                margin-bottom: 0;
             }
 
             .claims-list {
-                margin-top: 5px;
+                display: flex;
+                flex-direction: column;
+                gap: 0.75rem;
             }
 
             .claim-item {
-                background: rgba(255, 255, 255, 0.05);
+                background: white;
+                border: 1px solid var(--neutral-200);
                 border-radius: 6px;
-                padding: 10px;
-                margin-bottom: 8px;
+                padding: 1rem;
             }
 
             .claim-details {
-                margin-top: 8px;
-                font-size: 14px;
-                color: #E0E0E0;
+                margin-top: 0.5rem;
+                font-size: 0.8125rem;
+                color: var(--neutral-600);
+                line-height: 1.5;
             }
 
             .toggle-raw-btn {
-                background: rgba(33, 150, 243, 0.2);
-                border: 1px solid #2196F3;
-                color: #2196F3;
-                padding: 4px 8px;
-                border-radius: 4px;
+                background: var(--primary-blue);
+                border: none;
+                color: white;
+                padding: 0.5rem 1rem;
+                border-radius: 6px;
                 cursor: pointer;
-                font-size: 12px;
-                margin-bottom: 10px;
+                font-size: 0.75rem;
+                font-weight: 500;
+                transition: all 0.2s;
                 align-self: flex-start;
             }
 
             .toggle-raw-btn:hover {
-                background: rgba(33, 150, 243, 0.3);
+                background: var(--primary-dark);
+                transform: translateY(-1px);
+                box-shadow: var(--shadow-sm);
             }
 
             .raw-manifest {
-                background: rgba(0, 0, 0, 0.5);
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                border-radius: 6px;
-                padding: 10px;
-                margin-top: 0;
-                color: #E0E0E0;
-                font-size: 12px;
+                background: var(--neutral-900);
+                border: 1px solid var(--neutral-700);
+                border-radius: 8px;
+                padding: 1rem;
+                color: #e2e8f0;
+                font-family: 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
+                font-size: 0.75rem;
                 overflow-x: auto;
-                max-height: 300px;
+                max-height: 400px;
                 overflow-y: auto;
                 width: 100%;
+                margin-top: 0.75rem;
             }
 
+            /* Animations */
+            .animate-spin {
+                animation: spin 1s linear infinite;
+            }
+
+            @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+
+            /* Responsive Design */
             @media (max-width: 768px) {
                 .c2pa-header {
                     flex-direction: column;
                     align-items: stretch;
-                    gap: 10px;
+                    gap: 1rem;
+                    text-align: center;
+                }
+
+                .c2pa-toggle-btn {
+                    align-self: center;
                 }
 
                 .detail-item {
-                    flex-direction: column;
-                    gap: 5px;
+                    grid-template-columns: 1fr;
+                    gap: 0.5rem;
                 }
 
                 .detail-label {
-                    min-width: unset;
-                    margin-bottom: 5px;
+                    font-weight: 600;
+                    color: var(--neutral-800);
                 }
-                
-                .detail-value {
-                    align-items: stretch;
+
+                .media-type-section {
+                    padding: 1rem;
+                }
+
+                .c2pa-manifest-content {
+                    padding: 1rem;
+                }
+            }
+
+            /* High contrast mode support */
+            @media (prefers-contrast: high) {
+                .c2pa-display-container {
+                    border: 2px solid var(--neutral-800);
+                }
+
+                .status-indicator {
+                    border-width: 3px;
+                }
+            }
+
+            /* Reduced motion support */
+            @media (prefers-reduced-motion: reduce) {
+                .animate-spin {
+                    animation: none;
+                }
+
+                .c2pa-toggle-btn,
+                .toggle-raw-btn {
+                    transition: none;
+                }
+
+                .toggle-icon {
+                    transition: none;
                 }
             }
         `;

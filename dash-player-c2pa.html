@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DASH Video Player</title>
+    <title>C2PA DASH Video Player | Content Authenticity Demo</title>
 
     <!-- dash.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dashjs/4.7.4/dash.all.min.js"></script>
@@ -14,18 +14,43 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
+        integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
         crossorigin="anonymous"></script>
 
     <!-- video-js -->
     <script src="https://vjs.zencdn.net/8.3.0/video.min.js"></script>
     <link href="https://vjs.zencdn.net/8.3.0/video-js.css" rel="stylesheet" />
 
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- c2pa player CSS-->
     <link href="./c2pa-player.css" rel="stylesheet" />
 
     <style>
+        :root {
+            --primary-blue: #0066CC;
+            --primary-dark: #004499;
+            --accent-orange: #FF6B35;
+            --neutral-100: #F8FAFC;
+            --neutral-200: #E2E8F0;
+            --neutral-300: #CBD5E1;
+            --neutral-600: #475569;
+            --neutral-700: #334155;
+            --neutral-800: #1E293B;
+            --neutral-900: #0F172A;
+            --success-green: #10B981;
+            --warning-amber: #F59E0B;
+            --error-red: #EF4444;
+            --cr-blue: #0066FF;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -33,214 +58,376 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            min-height: 100vh;
-            padding: 20px;
-            color: white;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--neutral-100);
+            color: var(--neutral-800);
+            line-height: 1.6;
+            font-size: 14px;
         }
 
-        .container {
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid var(--neutral-200);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header-content {
             max-width: 1200px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 2.5rem;
-            background: linear-gradient(45deg, #fff, #e0e0e0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--neutral-900);
         }
 
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .header-badge {
+            background: var(--neutral-100);
+            color: var(--neutral-600);
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border: 1px solid var(--neutral-200);
+        }
+
+        /* Main Content */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        /* Input Section */
         .input-section {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--neutral-200);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--neutral-900);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .input-group {
             display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 1rem;
             flex-wrap: wrap;
         }
 
-        input[type="text"],
-        input[type="file"] {
+        .input-field {
             flex: 1;
-            padding: 12px 16px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            min-width: 250px;
+            min-width: 300px;
         }
 
-        input[type="text"]::placeholder {
-            color: rgba(255, 255, 255, 0.6);
+        .input-field input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--neutral-300);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            background: white;
         }
 
-        input[type="text"]:focus,
-        input[type="file"]:focus {
+        .input-field input:focus {
             outline: none;
-            border-color: #4CAF50;
-            box-shadow: 0 0 15px rgba(76, 175, 80, 0.3);
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgb(0 102 204 / 0.1);
+        }
+
+        .input-field input::placeholder {
+            color: var(--neutral-600);
+        }
+
+        .sample-url {
+            background: var(--neutral-50);
+            border: 1px solid var(--neutral-200);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-family: 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
+            font-size: 0.75rem;
+            color: var(--neutral-600);
+            word-break: break-all;
+            margin: 0.5rem 0;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
         }
 
         .btn {
-            padding: 12px 24px;
+            padding: 0.75rem 1.5rem;
             border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            user-select: none;
         }
 
         .btn-primary {
-            background: linear-gradient(45deg, #4CAF50, #45a049);
+            background: var(--primary-blue);
             color: white;
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
         }
 
         .btn-secondary {
-            background: linear-gradient(45deg, #2196F3, #1976D2);
-            color: white;
-            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+            background: white;
+            color: var(--neutral-700);
+            border: 1px solid var(--neutral-300);
         }
 
         .btn-secondary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+            background: var(--neutral-50);
+            border-color: var(--neutral-400);
         }
 
+        /* Player Section */
         .player-section {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
+            background: var(--neutral-900);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            position: relative;
         }
 
         #videoPlayer {
             width: 100%;
-            max-width: 100%;
             height: auto;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: block;
+            aspect-ratio: 16/9;
         }
 
+        /* Controls */
         .controls-section {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--neutral-200);
+            box-shadow: var(--shadow-sm);
         }
 
         .quality-selector {
-            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
 
-        select {
-            padding: 8px 12px;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            font-size: 14px;
+        .quality-selector label {
+            font-weight: 500;
+            color: var(--neutral-700);
+            font-size: 0.875rem;
         }
 
+        .quality-selector select {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--neutral-300);
+            border-radius: 6px;
+            background: white;
+            font-size: 0.875rem;
+            color: var(--neutral-700);
+            cursor: pointer;
+        }
+
+        /* Info Panel */
         .info-panel {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 20px;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--neutral-200);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .player-status-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--neutral-200);
         }
 
         .status {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            margin: 5px 0;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
         }
 
         .status.ready {
-            background: rgba(76, 175, 80, 0.8);
-            color: white;
+            background: rgb(16 185 129 / 0.1);
+            color: var(--success-green);
         }
 
         .status.loading {
-            background: rgba(255, 193, 7, 0.8);
-            color: black;
+            background: rgb(245 158 11 / 0.1);
+            color: var(--warning-amber);
         }
 
         .status.error {
-            background: rgba(244, 67, 54, 0.8);
-            color: white;
+            background: rgb(239 68 68 / 0.1);
+            color: var(--error-red);
         }
 
-        .sample-urls {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 15px;
+        .stream-info, .player-stats {
+            margin-top: 1rem;
         }
 
-        .sample-urls h4 {
-            margin-bottom: 10px;
-            color: #4CAF50;
+        .stream-info div, .player-stats div {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--neutral-100);
+            font-size: 0.8125rem;
+            color: var(--neutral-600);
         }
 
-        .sample-url {
-            display: block;
-            color: #81C784;
-            text-decoration: none;
-            padding: 5px 0;
-            cursor: pointer;
-            font-size: 14px;
-            word-break: break-all;
+        .stream-info div:last-child, .player-stats div:last-child {
+            border-bottom: none;
         }
 
-        .sample-url:hover {
-            color: #A5D6A7;
-            text-decoration: underline;
+        .player-stats h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--neutral-800);
+            margin-bottom: 0.5rem;
         }
 
+        /* C2PA Section gets special styling in the manifest display component */
+
+        /* Responsive Design */
         @media (max-width: 768px) {
-            .input-group {
+            .header-content {
+                padding: 0 1rem;
+            }
+
+            .header-badge {
+                display: none;
+            }
+
+            .main-container {
+                padding: 1rem;
+                gap: 1rem;
+            }
+
+            .input-row {
                 flex-direction: column;
             }
 
-            input[type="text"],
-            input[type="file"] {
+            .input-field {
                 min-width: unset;
             }
 
-            h1 {
-                font-size: 2rem;
+            .btn-group {
+                flex-direction: column;
             }
+
+            .quality-selector {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+        }
+
+        /* Loading states */
+        .loading-shimmer {
+            background: linear-gradient(90deg, var(--neutral-200) 25%, var(--neutral-100) 50%, var(--neutral-200) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        /* Enhanced accessibility */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Focus styles */
+        *:focus {
+            outline: 2px solid var(--primary-blue);
+            outline-offset: 2px;
+        }
+
+        button:focus, input:focus, select:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgb(0 102 204 / 0.2);
         }
     </style>
     <script type="module">
@@ -611,48 +798,102 @@
 </head>
 
 <body>
-    <div class="container">
-        <h1>🎬 DASH Video Player</h1>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">C2</div>
+                <span>C2PA DASH Player</span>
+            </div>
+            <div class="header-badge">IBC 2025 Accelerator</div>
+        </div>
+    </header>
 
-        <div class="input-section">
+    <!-- Main Content -->
+    <main class="main-container">
+        <!-- Input Section -->
+        <section class="input-section">
+            <h2 class="section-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                </svg>
+                Load Content
+            </h2>
+            
             <div class="input-group">
-                <input type="text" id="mpdUrl" placeholder="Enter MPD URL or select local file...">
-                <input type="file" id="mpdFile" accept=".mpd" title="Select local MPD file">
-            </div>
-            <br>
-            <div>
-                https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists/test-itn-signed/c2pa-test.mpd
-            </div>
-            <br>
-            <div class="input-group">
-                <button class="btn btn-primary" id="loadStreamBtn">Load Stream</button>
-                <button class="btn btn-secondary" id="clearPlayerBtn">Clear</button>
-            </div>
-            <div class="player-section">
-                <video id="videoPlayer" class="video-js" controls="true">
-                    Your browser does not support the video element.
-                </video>
-            </div>
-
-            <div class="controls-section">
-                <div class="quality-selector">
-                    <label for="qualitySelect">Quality:</label>
-                    <select id="qualitySelect" onchange="changeQuality()">
-                        <option value="auto">Auto</option>
-                    </select>
+                <div class="input-row">
+                    <div class="input-field">
+                        <input type="text" id="mpdUrl" placeholder="Enter DASH manifest URL...">
+                    </div>
+                    <div class="input-field">
+                        <input type="file" id="mpdFile" accept=".mpd" title="Select local MPD file">
+                    </div>
+                </div>
+                
+                <div class="sample-url">
+                    Sample: https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists/test-itn-signed/c2pa-test.mpd
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="loadStreamBtn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="5,3 19,12 5,21 5,3"/>
+                        </svg>
+                        Load Stream
+                    </button>
+                    <button class="btn btn-secondary" id="clearPlayerBtn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 1 2 2 2 2v2"/>
+                        </svg>
+                        Clear
+                    </button>
                 </div>
             </div>
+        </section>
 
-            <div class="info-panel">
-                <h3>Player Status: <span id="playerStatus" class="status loading">Ready</span></h3>
-                <div id="streamInfo"></div>
-                <div id="playerStats"></div>
+        <!-- Video Player -->
+        <section class="player-section">
+            <video id="videoPlayer" class="video-js" controls="true" aria-label="Video player for C2PA content verification">
+                Your browser does not support the video element.
+            </video>
+        </section>
+
+        <!-- Controls -->
+        <section class="controls-section">
+            <h2 class="section-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                Playback Controls
+            </h2>
+            <div class="quality-selector">
+                <label for="qualitySelect">Video Quality:</label>
+                <select id="qualitySelect" onchange="changeQuality()">
+                    <option value="auto">Auto</option>
+                </select>
             </div>
+        </section>
 
-            <!-- C2PA Manifest Display Container -->
-            <div id="c2paManifestContainer"></div>
+        <!-- Player Status -->
+        <section class="info-panel">
+            <div class="player-status-header">
+                <h2 class="section-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 6v6l4 2"/>
+                    </svg>
+                    Player Status
+                </h2>
+                <span id="playerStatus" class="status loading">Ready</span>
+            </div>
+            <div id="streamInfo" class="stream-info"></div>
+            <div id="playerStats" class="player-stats"></div>
+        </section>
 
-        </div>
+        <!-- C2PA Manifest Display Container -->
+        <div id="c2paManifestContainer"></div>
+    </main>
 </body>
 
 </html>
