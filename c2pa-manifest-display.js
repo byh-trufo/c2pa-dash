@@ -24,14 +24,7 @@ class C2PAManifestDisplay {
             <section class="c2pa-display-container">
                 <div class="c2pa-header">
                     <h2 class="section-title">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M9 12l2 2 4-4"/>
-                            <path d="M21 12c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z"/>
-                            <path d="M3 12c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z"/>
-                            <path d="M12 3c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z"/>
-                            <path d="M12 21c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z"/>
-                        </svg>
-                        <span class="cr-badge">℗</span> Content Authenticity
+                        Content Authenticity
                     </h2>
                     <button class="c2pa-toggle-btn" onclick="window.c2paDisplay.toggleExpanded()">
                         <span class="toggle-text">Show Details</span>
@@ -100,7 +93,7 @@ class C2PAManifestDisplay {
                     <circle cx="12" cy="12" r="10"/>
                 </svg>
             `;
-            statusText.textContent = 'Content authenticity verified';
+            statusText.textContent = 'Content authenticity verified.';
         } else if (status.verified === false) {
             statusIndicator.classList.add('failed');
             statusIndicator.innerHTML = `
@@ -110,7 +103,7 @@ class C2PAManifestDisplay {
                     <line x1="9" y1="9" x2="15" y2="15"/>
                 </svg>
             `;
-            statusText.textContent = 'Content authenticity verification failed';
+            statusText.textContent = 'Content authenticity verification failed.';
         } else {
             statusIndicator.classList.add('pending');
             statusIndicator.innerHTML = `
@@ -131,13 +124,8 @@ class C2PAManifestDisplay {
 
         let html = '<div class="manifest-summary">';
         
-        // Overall status
-        html += `<div class="manifest-section">
-            <h4>Verification Summary</h4>
-            <div class="verification-status ${status.verified === true ? 'success' : status.verified === false ? 'error' : 'pending'}">
-                Status: ${status.verified === true ? 'VERIFIED' : status.verified === false ? 'FAILED' : 'PENDING'}
-            </div>
-        </div>`;
+        // C2PA Manifest Chain section with toggle
+        html += this.generateManifestChainSection(status);
 
         // Details for each media type
         if (status.details && Object.keys(status.details).length > 0) {
@@ -152,6 +140,112 @@ class C2PAManifestDisplay {
 
         html += '</div>';
         manifestContent.innerHTML = html;
+    }
+
+    /**
+     * Generate HTML for the C2PA Manifest Chain section
+     */
+    generateManifestChainSection(status) {
+        // Find video manifest for chain analysis (prioritize video over audio as requested)
+        let chainManifest = null;
+        let manifestCount = 0;
+        
+        if (status.details) {
+            // Prioritize video manifest
+            if (status.details.video && status.details.video.manifest) {
+                chainManifest = status.details.video.manifest;
+            } else if (status.details.audio && status.details.audio.manifest) {
+                chainManifest = status.details.audio.manifest;
+            }
+        }
+
+        // Count manifests - for now we'll show 1 if we have a manifest, 0 if not
+        // In a real implementation, you'd count actual chain manifests
+        manifestCount = chainManifest ? 1 : 0;
+        
+        // Extract assertions if available
+        let assertions = [];
+        if (chainManifest && chainManifest.manifestStore) {
+            const manifestStore = chainManifest.manifestStore;
+            
+            // Look for assertions in various places
+            if (manifestStore.assertions) {
+                assertions = manifestStore.assertions;
+            } else if (manifestStore.claims) {
+                // Convert claims to assertion-like format
+                assertions = manifestStore.claims.map((claim, index) => ({
+                    label: claim.label || `Assertion ${index + 1}`,
+                    kind: claim.label || 'unknown',
+                    data: claim
+                }));
+            }
+        }
+
+        let html = `<div class="manifest-section">
+            <div class="manifest-chain-header">
+                <h4>C2PA Manifest Chain</h4>
+                <button class="manifest-chain-toggle-btn" onclick="window.c2paDisplay.toggleManifestChain()">
+                    <span class="chain-toggle-text">Show Details</span>
+                    <svg class="chain-toggle-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6,9 12,15 18,9"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="manifest-chain-summary">
+                <span class="manifest-count">${manifestCount} manifest${manifestCount !== 1 ? 's' : ''} in chain</span>
+            </div>
+            <div class="manifest-chain-details" style="display: none;">`;
+        
+        if (manifestCount > 0 && assertions.length > 0) {
+            html += `<div class="assertions-list">
+                <h5>Video Stream Assertions</h5>`;
+            
+            assertions.forEach((assertion, index) => {
+                html += `<div class="assertion-item">
+                    <div class="assertion-header">
+                        <span class="assertion-number">${index + 1}</span>
+                        <span class="assertion-label">${assertion.label || assertion.kind || 'Unknown Assertion'}</span>
+                    </div>`;
+                
+                if (assertion.data) {
+                    html += `<div class="assertion-details">`;
+                    
+                    // Display assertion details based on available data
+                    if (typeof assertion.data === 'object') {
+                        for (const [key, value] of Object.entries(assertion.data)) {
+                            if (key !== 'label' && value !== null && value !== undefined) {
+                                html += `<div class="assertion-property">
+                                    <span class="property-name">${key}:</span>
+                                    <span class="property-value">${typeof value === 'object' ? JSON.stringify(value, null, 2) : value}</span>
+                                </div>`;
+                            }
+                        }
+                    } else {
+                        html += `<div class="assertion-property">
+                            <span class="property-value">${assertion.data}</span>
+                        </div>`;
+                    }
+                    
+                    html += `</div>`;
+                }
+                
+                html += `</div>`;
+            });
+            
+            html += `</div>`;
+        } else if (manifestCount > 0) {
+            html += `<div class="no-assertions">
+                <p>No assertions found in the manifest chain.</p>
+            </div>`;
+        } else {
+            html += `<div class="no-chain-data">
+                <p>No manifest chain data available.</p>
+            </div>`;
+        }
+        
+        html += `</div></div>`;
+        
+        return html;
     }
 
     /**
@@ -388,7 +482,6 @@ class C2PAManifestDisplay {
                 border-radius: 12px;
                 border: 1px solid var(--neutral-200);
                 box-shadow: var(--shadow-sm);
-                margin-top: 2rem;
                 overflow: hidden;
             }
 
@@ -690,6 +783,7 @@ class C2PAManifestDisplay {
                 font-weight: 500;
                 transition: all 0.2s;
                 align-self: flex-start;
+                margin-top: -7px;
             }
 
             .toggle-raw-btn:hover {
