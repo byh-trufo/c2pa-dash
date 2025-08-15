@@ -246,15 +246,21 @@
     <script type="module">
         import { c2pa_init } from './c2pa-dash-plugin.js';
         import { C2PAPlayer } from './C2paPlayer/main.js';
+        import { C2PAManifestDisplay } from './c2pa-manifest-display.js';
 
         let dashPlayer;
         var video;
         let isInitialized = false;
         var c2paPlayer;
+        var c2paManifestDisplay;
 
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function () {
             initializePlayer();
+            // Initialize C2PA manifest display
+            c2paManifestDisplay = new C2PAManifestDisplay('c2paManifestContainer');
+            // Make it globally accessible for button callbacks
+            window.c2paDisplay = c2paManifestDisplay;
         });
 
         function initializePlayer() {
@@ -279,7 +285,16 @@
             c2paPlayer.initialize();
             c2pa_init(dashPlayer, function (e) {
                 c2paPlayer.playbackUpdate(e.c2pa_status);
+                // Update the C2PA manifest display
+                if (c2paManifestDisplay) {
+                    c2paManifestDisplay.updateDisplay(e.c2pa_status);
+                }
             }).then(() => {
+                dashPlayer.initialize(video, url, true);
+            }).catch((error) => {
+                console.error('[C2PA] Initialization error:', error);
+                updateStreamInfo('C2PA initialization error: ' + error.message);
+                // Still initialize the player without C2PA
                 dashPlayer.initialize(video, url, true);
             });
 
@@ -345,6 +360,10 @@
             updateStreamInfo('Player cleared');
             clearQualitySelector();
             clearStats();
+            // Reset C2PA manifest display
+            if (c2paManifestDisplay) {
+                c2paManifestDisplay.reset();
+            }
             // Relaod the window for C2PA player to load new MPD correctly 
             location.reload();
         }
@@ -587,6 +606,14 @@
         const clearPlayerButton = document.getElementById('clearPlayerBtn');
         clearPlayerButton.addEventListener('click', clearPlayer);
 
+        const demoC2PAButton = document.getElementById('demoC2PABtn');
+        demoC2PAButton.addEventListener('click', function() {
+            if (c2paManifestDisplay) {
+                c2paManifestDisplay.showDemo();
+                updateStreamInfo('C2PA Display Demo - showing sample manifest data');
+            }
+        });
+
     </script>
 
 </head>
@@ -608,6 +635,7 @@
             <div class="input-group">
                 <button class="btn btn-primary" id="loadStreamBtn">Load Stream</button>
                 <button class="btn btn-secondary" id="clearPlayerBtn">Clear</button>
+                <button class="btn btn-secondary" id="demoC2PABtn">Demo C2PA Display</button>
             </div>
             <div class="player-section">
                 <video id="videoPlayer" class="video-js" controls="true">
@@ -629,6 +657,9 @@
                 <div id="streamInfo"></div>
                 <div id="playerStats"></div>
             </div>
+
+            <!-- C2PA Manifest Display Container -->
+            <div id="c2paManifestContainer"></div>
 
         </div>
 </body>
