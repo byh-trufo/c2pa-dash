@@ -28,14 +28,16 @@ class C2PAManifestDisplay {
                     </h2>
                     <button class="c2pa-toggle-btn" onclick="window.c2paDisplay.toggleExpanded()">
                         <span class="toggle-text">Show Details</span>
-                        <svg class="toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg class="toggle-icon" width="16" height="16" viewBox="0 0 24 24" 
+                             fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="6,9 12,15 18,9"/>
                         </svg>
                     </button>
                 </div>
                 <div class="c2pa-status">
                     <div class="status-indicator waiting">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg width="16" height="16" viewBox="0 0 24 24" 
+                             fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="10"/>
                             <path d="M12 6v6l4 2"/>
                         </svg>
@@ -88,7 +90,8 @@ class C2PAManifestDisplay {
         if (status.verified === true) {
             statusIndicator.classList.add('verified');
             statusIndicator.innerHTML = `
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg width="16" height="16" viewBox="0 0 24 24" 
+                     fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M9 12l2 2 4-4"/>
                     <circle cx="12" cy="12" r="10"/>
                 </svg>
@@ -97,7 +100,8 @@ class C2PAManifestDisplay {
         } else if (status.verified === false) {
             statusIndicator.classList.add('failed');
             statusIndicator.innerHTML = `
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg width="16" height="16" viewBox="0 0 24 24" 
+                     fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="10"/>
                     <line x1="15" y1="9" x2="9" y2="15"/>
                     <line x1="9" y1="9" x2="15" y2="15"/>
@@ -107,7 +111,8 @@ class C2PAManifestDisplay {
         } else {
             statusIndicator.classList.add('pending');
             statusIndicator.innerHTML = `
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin">
+                <svg width="16" height="16" viewBox="0 0 24 24" 
+                     fill="none" stroke="currentColor" stroke-width="2" class="animate-spin">
                     <path d="M21 12a9 9 0 11-6.219-8.56"/>
                 </svg>
             `;
@@ -144,6 +149,8 @@ class C2PAManifestDisplay {
 
     /**
      * Generate HTML for the C2PA Manifest Chain section
+     * @param {Object} status - The C2PA status object containing manifest data
+     * @returns {string} HTML string for the manifest chain section
      */
     generateManifestChainSection(status) {
         // Find video manifest for chain analysis (prioritize video over audio as requested)
@@ -184,15 +191,19 @@ class C2PAManifestDisplay {
         let html = `<div class="manifest-section">
             <div class="manifest-chain-header">
                 <h4>C2PA Manifest Chain</h4>
-                <button class="manifest-chain-toggle-btn" onclick="window.c2paDisplay.toggleManifestChain()">
+                <button class="manifest-chain-toggle-btn" 
+                        onclick="window.c2paDisplay.toggleManifestChain()">
                     <span class="chain-toggle-text">Show Details</span>
-                    <svg class="chain-toggle-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg class="chain-toggle-icon" width="12" height="12" viewBox="0 0 24 24" 
+                         fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="6,9 12,15 18,9"/>
                     </svg>
                 </button>
             </div>
             <div class="manifest-chain-summary">
-                <span class="manifest-count">${manifestCount} manifest${manifestCount !== 1 ? 's' : ''} in chain</span>
+                <span class="manifest-count">
+                    ${manifestCount} manifest${manifestCount !== 1 ? 's' : ''} in chain
+                </span>
             </div>
             <div class="manifest-chain-details" style="display: none;">`;
         
@@ -204,7 +215,9 @@ class C2PAManifestDisplay {
                 html += `<div class="assertion-item">
                     <div class="assertion-header">
                         <span class="assertion-number">${index + 1}</span>
-                        <span class="assertion-label">${assertion.label || assertion.kind || 'Unknown Assertion'}</span>
+                        <span class="assertion-label">
+                            ${assertion.label || assertion.kind || 'Unknown Assertion'}
+                        </span>
                     </div>`;
                 
                 if (assertion.data) {
@@ -216,7 +229,11 @@ class C2PAManifestDisplay {
                             if (key !== 'label' && value !== null && value !== undefined) {
                                 html += `<div class="assertion-property">
                                     <span class="property-name">${key}:</span>
-                                    <span class="property-value">${typeof value === 'object' ? JSON.stringify(value, null, 2) : value}</span>
+                                    <span class="property-value">${
+                                        typeof value === 'object' 
+                                            ? JSON.stringify(value, null, 2) 
+                                            : value
+                                    }</span>
                                 </div>`;
                             }
                         }
@@ -250,6 +267,9 @@ class C2PAManifestDisplay {
 
     /**
      * Generate HTML for a specific media type section
+     * @param {string} mediaType - The media type (e.g., 'video', 'audio')
+     * @param {Object} detail - The detail object for this media type
+     * @returns {string} HTML string for the media type section
      */
     generateMediaTypeSection(mediaType, detail) {
         let html = `<div class="media-type-section">
@@ -260,7 +280,9 @@ class C2PAManifestDisplay {
         const verified = detail.verified;
         html += `<div class="detail-item">
             <span class="detail-label">Verified:</span>
-            <span class="detail-value ${verified ? 'success' : 'error'}">${verified ? 'Yes' : 'No'}</span>
+            <span class="detail-value ${verified ? 'success' : 'error'}">
+                ${verified ? 'Yes' : 'No'}
+            </span>
         </div>`;
 
         // Error information
@@ -284,7 +306,9 @@ class C2PAManifestDisplay {
                 manifest.validationStatus.forEach(issue => {
                     html += `<div class="validation-issue">
                         <strong>Code:</strong> ${issue.code || 'Unknown'}<br>
-                        <strong>Explanation:</strong> ${issue.explanation || 'No explanation provided'}
+                        <strong>Explanation:</strong> ${
+                            issue.explanation || 'No explanation provided'
+                        }
                     </div>`;
                 });
                 
@@ -329,7 +353,11 @@ class C2PAManifestDisplay {
                     }
                     
                     if (claim.signature) {
-                        html += `<div><strong>Signature Info:</strong> ${typeof claim.signature === 'string' ? claim.signature : 'Present'}</div>`;
+                        html += `<div><strong>Signature Info:</strong> ${
+                            typeof claim.signature === 'string' 
+                                ? claim.signature 
+                                : 'Present'
+                        }</div>`;
                     }
                     
                     html += `</div></div>`;
@@ -342,10 +370,12 @@ class C2PAManifestDisplay {
             html += `<div class="detail-item">
                 <span class="detail-label">Raw Manifest:</span>
                 <div class="detail-value">
-                    <button class="toggle-raw-btn" onclick="window.c2paDisplay.toggleRawManifest('${mediaType}')">
+                    <button class="toggle-raw-btn" 
+                            onclick="window.c2paDisplay.toggleRawManifest('${mediaType}')">
                         Show Raw Data
                     </button>
-                    <pre class="raw-manifest" id="raw-${mediaType}" style="display: none;">${JSON.stringify(manifest, null, 2)}</pre>
+                    <pre class="raw-manifest" id="raw-${mediaType}" style="display: none;">
+${JSON.stringify(manifest, null, 2)}</pre>
                 </div>
             </div>`;
         }
@@ -390,6 +420,7 @@ class C2PAManifestDisplay {
 
     /**
      * Toggle raw manifest data visibility
+     * @param {string} mediaType - The media type identifier for the raw data
      */
     toggleRawManifest(mediaType) {
         const rawElement = document.getElementById(`raw-${mediaType}`);
@@ -402,6 +433,32 @@ class C2PAManifestDisplay {
             } else {
                 rawElement.style.display = 'none';
                 buttonElement.textContent = 'Show Raw Data';
+            }
+        }
+    }
+
+    /**
+     * Toggle manifest chain details visibility
+     */
+    toggleManifestChain() {
+        const detailsElement = this.container.querySelector('.manifest-chain-details');
+        const toggleText = this.container.querySelector('.chain-toggle-text');
+        const toggleIcon = this.container.querySelector('.chain-toggle-icon');
+        const toggleBtn = this.container.querySelector('.manifest-chain-toggle-btn');
+
+        if (detailsElement && toggleText && toggleIcon && toggleBtn) {
+            const isHidden = detailsElement.style.display === 'none';
+
+            if (isHidden) {
+                detailsElement.style.display = 'block';
+                toggleText.textContent = 'Hide Details';
+                toggleIcon.style.transform = 'rotate(180deg)';
+                toggleBtn.setAttribute('aria-expanded', 'true');
+            } else {
+                detailsElement.style.display = 'none';
+                toggleText.textContent = 'Show Details';
+                toggleIcon.style.transform = 'rotate(0deg)';
+                toggleBtn.setAttribute('aria-expanded', 'false');
             }
         }
     }
@@ -434,6 +491,57 @@ class C2PAManifestDisplay {
                                     label: "c2pa.hash",
                                     signature: "SHA-256 content hash verified"
                                 }
+                            ],
+                            assertions: [
+                                {
+                                    label: "c2pa.actions",
+                                    kind: "c2pa.actions.v1",
+                                    data: {
+                                        actions: [
+                                            {
+                                                action: "c2pa.created",
+                                                when: "2025-01-15T10:30:00Z",
+                                                softwareAgent: "IBC Content Creator v1.0"
+                                            },
+                                            {
+                                                action: "c2pa.edited", 
+                                                when: "2025-01-15T14:45:00Z",
+                                                softwareAgent: "Video Editor Pro v2.1"
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    label: "c2pa.hash.data",
+                                    kind: "c2pa.hash.data.v1",
+                                    data: {
+                                        algorithm: "SHA-256",
+                                        hash: "abc123def456789...",
+                                        pad: "0x00"
+                                    }
+                                },
+                                {
+                                    label: "c2pa.thumbnail",
+                                    kind: "c2pa.thumbnail.claim.jpeg.v1", 
+                                    data: {
+                                        format: "image/jpeg",
+                                        identifier: "jumbf://self#content-thumbnail"
+                                    }
+                                },
+                                {
+                                    label: "c2pa.creative.work",
+                                    kind: "c2pa.creative.work.v1",
+                                    data: {
+                                        author: [
+                                            {
+                                                name: "IBC 2025 Content Team",
+                                                identifier: "https://ibc.org/accelerator"
+                                            }
+                                        ],
+                                        datePublished: "2025-01-15",
+                                        license: "https://creativecommons.org/licenses/by/4.0/"
+                                    }
+                                }
                             ]
                         }
                     },
@@ -449,7 +557,8 @@ class C2PAManifestDisplay {
                             validationStatus: [
                                 {
                                     code: "signing_credential.untrusted",
-                                    explanation: "The signing credential chain could not be validated against known trusted authorities"
+                                    explanation: "The signing credential chain could not be " +
+                                               "validated against known trusted authorities"
                                 }
                             ],
                             claims: []
@@ -624,6 +733,152 @@ class C2PAManifestDisplay {
                 font-size: 1rem;
                 padding-bottom: 0.5rem;
                 border-bottom: 1px solid var(--neutral-200);
+            }
+
+            .manifest-chain-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 1rem;
+            }
+
+            .manifest-chain-header h4 {
+                margin-bottom: 0;
+                border-bottom: none;
+                padding-bottom: 0;
+            }
+
+            .manifest-chain-toggle-btn {
+                background: var(--neutral-100);
+                border: 1px solid var(--neutral-300);
+                color: var(--neutral-700);
+                padding: 0.375rem 0.75rem;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 0.75rem;
+                font-weight: 500;
+                transition: all 0.2s;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .manifest-chain-toggle-btn:hover {
+                background: var(--neutral-200);
+                border-color: var(--neutral-400);
+            }
+
+            .chain-toggle-icon {
+                transition: transform 0.2s;
+            }
+
+            .manifest-chain-summary {
+                background: var(--neutral-50);
+                border: 1px solid var(--neutral-200);
+                border-radius: 6px;
+                padding: 0.75rem 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .manifest-count {
+                font-size: 0.875rem;
+                color: var(--neutral-700);
+                font-weight: 500;
+            }
+
+            .manifest-chain-details {
+                border-top: 1px solid var(--neutral-200);
+                padding-top: 1rem;
+            }
+
+            .assertions-list h5 {
+                color: var(--neutral-800);
+                font-weight: 600;
+                margin-bottom: 1rem;
+                font-size: 0.9375rem;
+                padding-bottom: 0.5rem;
+                border-bottom: 1px solid var(--neutral-200);
+            }
+
+            .assertion-item {
+                background: white;
+                border: 1px solid var(--neutral-200);
+                border-radius: 8px;
+                margin-bottom: 1rem;
+                overflow: hidden;
+            }
+
+            .assertion-item:last-child {
+                margin-bottom: 0;
+            }
+
+            .assertion-header {
+                background: var(--neutral-50);
+                padding: 0.75rem 1rem;
+                border-bottom: 1px solid var(--neutral-200);
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+            }
+
+            .assertion-number {
+                background: var(--primary-blue);
+                color: white;
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.75rem;
+                font-weight: 600;
+                flex-shrink: 0;
+            }
+
+            .assertion-label {
+                font-weight: 500;
+                color: var(--neutral-800);
+                font-size: 0.875rem;
+            }
+
+            .assertion-details {
+                padding: 1rem;
+            }
+
+            .assertion-property {
+                display: grid;
+                grid-template-columns: 120px 1fr;
+                gap: 0.75rem;
+                margin-bottom: 0.75rem;
+                align-items: start;
+            }
+
+            .assertion-property:last-child {
+                margin-bottom: 0;
+            }
+
+            .property-name {
+                font-weight: 500;
+                color: var(--neutral-600);
+                font-size: 0.8125rem;
+            }
+
+            .property-value {
+                font-size: 0.8125rem;
+                color: var(--neutral-800);
+                word-break: break-word;
+                font-family: 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
+                background: var(--neutral-50);
+                padding: 0.375rem 0.5rem;
+                border-radius: 4px;
+                border: 1px solid var(--neutral-200);
+            }
+
+            .no-assertions, .no-chain-data {
+                text-align: center;
+                padding: 2rem 1rem;
+                color: var(--neutral-600);
+                font-style: italic;
             }
 
             .verification-status {
@@ -830,9 +1085,29 @@ class C2PAManifestDisplay {
                     align-self: center;
                 }
 
+                .manifest-chain-header {
+                    flex-direction: column;
+                    align-items: stretch;
+                    gap: 0.75rem;
+                }
+
+                .manifest-chain-toggle-btn {
+                    align-self: center;
+                }
+
                 .detail-item {
                     grid-template-columns: 1fr;
                     gap: 0.5rem;
+                }
+
+                .assertion-property {
+                    grid-template-columns: 1fr;
+                    gap: 0.5rem;
+                }
+
+                .property-name {
+                    font-weight: 600;
+                    color: var(--neutral-800);
                 }
 
                 .detail-label {
@@ -867,11 +1142,13 @@ class C2PAManifestDisplay {
                 }
 
                 .c2pa-toggle-btn,
-                .toggle-raw-btn {
+                .toggle-raw-btn,
+                .manifest-chain-toggle-btn {
                     transition: none;
                 }
 
-                .toggle-icon {
+                .toggle-icon,
+                .chain-toggle-icon {
                     transition: none;
                 }
             }
