@@ -231,7 +231,7 @@ class C2PAManifestDisplay {
                                     <span class="property-name">${key}:</span>
                                     <span class="property-value">${
                                         typeof value === 'object' 
-                                            ? JSON.stringify(value, null, 2) 
+                                            ? this.safeJSONStringify(value, null, 2) 
                                             : value
                                     }</span>
                                 </div>`;
@@ -375,7 +375,7 @@ class C2PAManifestDisplay {
                         Show Raw Data
                     </button>
                     <pre class="raw-manifest" id="raw-${mediaType}" style="display: none;">
-${JSON.stringify(manifest, null, 2)}</pre>
+${this.safeJSONStringify(manifest, null, 2)}</pre>
                 </div>
             </div>`;
         }
@@ -461,6 +461,26 @@ ${JSON.stringify(manifest, null, 2)}</pre>
                 toggleBtn.setAttribute('aria-expanded', 'false');
             }
         }
+    }
+
+    /**
+     * Safe JSON stringify that handles circular references
+     * @param {Object} obj - Object to stringify
+     * @param {Function} replacer - Replacer function
+     * @param {number} space - Indentation spaces
+     * @returns {string} Safe JSON string
+     */
+    safeJSONStringify(obj, replacer, space) {
+        const seen = new Set();
+        return JSON.stringify(obj, function(key, val) {
+            if (val != null && typeof val === "object") {
+                if (seen.has(val)) {
+                    return "[Circular Reference]";
+                }
+                seen.add(val);
+            }
+            return replacer ? replacer(key, val) : val;
+        }, space);
     }
 
     /**
@@ -600,7 +620,7 @@ ${JSON.stringify(manifest, null, 2)}</pre>
                 align-items: center;
                 padding: 1.5rem;
                 border-bottom: 1px solid var(--neutral-200);
-                background: linear-gradient(135deg, var(--cr-blue) 0%, var(--primary-blue) 100%);
+                background: linear-gradient(135deg, var(--cr-red) 0%, var(--primary-red) 100%);
                 color: white;
             }
 
@@ -822,7 +842,7 @@ ${JSON.stringify(manifest, null, 2)}</pre>
             }
 
             .assertion-number {
-                background: var(--primary-blue);
+                background: var(--primary-red);
                 color: white;
                 width: 24px;
                 height: 24px;
@@ -934,7 +954,7 @@ ${JSON.stringify(manifest, null, 2)}</pre>
                 content: '';
                 width: 8px;
                 height: 8px;
-                background: var(--primary-blue);
+                background: var(--primary-red);
                 border-radius: 50%;
             }
 
@@ -1028,7 +1048,7 @@ ${JSON.stringify(manifest, null, 2)}</pre>
             }
 
             .toggle-raw-btn {
-                background: var(--primary-blue);
+                background: var(--primary-red);
                 border: none;
                 color: white;
                 padding: 0.5rem 1rem;

@@ -4,7 +4,7 @@ input
 output
 
 # tool files
-C2paPlayer
+# C2paPlayer
 packager-*
 
 # dev files
