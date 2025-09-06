@@ -26,17 +26,27 @@ class C2PAManifestDisplay {
                     <h2 class="section-title">
                         Content Authenticity
                     </h2>
-                    <button class="c2pa-toggle-btn" onclick="window.c2paDisplay.toggleExpanded()">
-                        <span class="toggle-text">Show Details</span>
-                        <svg class="toggle-icon" width="16" height="16" viewBox="0 0 24 24" 
-                             fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="6,9 12,15 18,9"/>
-                        </svg>
-                    </button>
+                    <div class="c2pa-header-buttons">
+                        <button class="c2pa-scan-btn" onclick="window.c2paDisplay.scanManifestRecovery()">
+                            <svg width="16" height="16" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"/>
+                                <path d="M21 21l-4.35-4.35"/>
+                            </svg>
+                            <span>Scan for Manifest Recovery</span>
+                        </button>
+                        <button class="c2pa-toggle-btn" onclick="window.c2paDisplay.toggleExpanded()">
+                            <span class="toggle-text">Show Details</span>
+                            <svg class="toggle-icon" width="16" height="16" viewBox="0 0 24 24" 
+                                 fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6,9 12,15 18,9"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
                 <div class="c2pa-status">
                     <div class="status-indicator waiting">
-                        <svg width="16" height="16" viewBox="0 0 24 24" 
+                        <svg width="16" height="16" viewBox="0 0 24 24"
                              fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="10"/>
                             <path d="M12 6v6l4 2"/>
@@ -47,6 +57,33 @@ class C2PAManifestDisplay {
                 <div class="c2pa-details" style="display: none;">
                     <div class="c2pa-manifest-content">
                         <p class="no-data-message">No manifest data available</p>
+                    </div>
+                </div>
+                
+                <!-- Scan Overlay -->
+                <div id="c2pa-scan-overlay" style="display: none;">
+                    <div class="scan-overlay-content">
+                        <div class="scan-loading">
+                            <div class="scan-spinner">⟳</div>
+                            <h3>Scanning for Manifest Recovery</h3>
+                            <p>Analyzing content for authenticity information...</p>
+                        </div>
+                        <div class="scan-results" style="display: none;">
+                            <div class="result-icon">✓</div>
+                            <h3>Scan Complete</h3>
+                            <div class="hash-display">
+                                <span class="hash-label">Hash ID:</span>
+                                <span class="hash-value" id="hash-result">000000</span>
+                            </div>
+                            <div class="similarity-display">
+                                <span class="similarity-label">Similarity:</span>
+                                <span class="similarity-value" id="similarity-result">0.0%</span>
+                            </div>
+                            <div class="error-message" style="display: none;" id="error-result">
+                                An error occurred during scanning.
+                            </div>
+                            <button class="scan-close-btn" onclick="window.c2paDisplay.hideScanOverlay()">Close</button>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -87,6 +124,15 @@ class C2PAManifestDisplay {
         // Reset classes
         statusIndicator.className = 'status-indicator';
         
+        // Check if there are errors indicating no manifest
+        const hasManifestErrors = status.details && Object.values(status.details).some(detail => 
+            detail.error && (
+                detail.error.includes('null manifestStore') || 
+                detail.error.includes('No segment found') || 
+                detail.error.includes('no validation status available')
+            )
+        );
+        
         if (status.verified === true) {
             statusIndicator.classList.add('verified');
             statusIndicator.innerHTML = `
@@ -108,6 +154,17 @@ class C2PAManifestDisplay {
                 </svg>
             `;
             statusText.textContent = 'Content authenticity verification failed.';
+        } else if (hasManifestErrors) {
+            statusIndicator.classList.add('not-found');
+            statusIndicator.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" 
+                     fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 8v4"/>
+                    <path d="m12 16 .01 0"/>
+                </svg>
+            `;
+            statusText.textContent = 'No valid C2PA manifest found in this content.';
         } else {
             statusIndicator.classList.add('pending');
             statusIndicator.innerHTML = `
@@ -419,6 +476,32 @@ ${this.safeJSONStringify(manifest, null, 2)}</pre>
     }
 
     /**
+     * Scan for manifest recovery information
+     */
+    async scanManifestRecovery() {
+        console.log('[C2PA Display] Scanning for manifest recovery information...');
+        
+        // Get the current MPD URL from the input field
+        const mpdUrlInput = document.getElementById('mpdUrl');
+        const mpdUrl = mpdUrlInput ? mpdUrlInput.value.trim() : '';
+        
+        // Use the new manifest recovery UI service
+        if (window.manifestRecoveryUI) {
+            await window.manifestRecoveryUI.startScan(mpdUrl);
+        } else {
+            this.showAlert('Manifest recovery service not available.', 'error');
+        }
+    }
+
+    /**
+     * Show alert message
+     */
+    showAlert(message, type = 'info') {
+        // Simple alert for now, can be enhanced later
+        alert(message);
+    }
+
+    /**
      * Toggle raw manifest data visibility
      * @param {string} mediaType - The media type identifier for the raw data
      */
@@ -620,13 +703,13 @@ ${this.safeJSONStringify(manifest, null, 2)}</pre>
                 align-items: center;
                 padding: 1.5rem;
                 border-bottom: 1px solid var(--neutral-200);
-                background: linear-gradient(135deg, var(--cr-red) 0%, var(--primary-red) 100%);
-                color: white;
+                background: white;
+                color: var(--primary-red);
             }
 
             .c2pa-header .section-title {
                 margin: 0;
-                color: white;
+                color: var(--primary-red);
                 font-weight: 600;
                 font-size: 1.125rem;
                 display: flex;
@@ -634,19 +717,15 @@ ${this.safeJSONStringify(manifest, null, 2)}</pre>
                 gap: 0.75rem;
             }
 
-            .cr-badge {
-                background: rgba(255, 255, 255, 0.2);
-                color: white;
-                padding: 0.25rem 0.5rem;
-                border-radius: 6px;
-                font-size: 0.875rem;
-                font-weight: 700;
-                border: 1px solid rgba(255, 255, 255, 0.3);
+            .c2pa-header-buttons {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
             }
 
-            .c2pa-toggle-btn {
-                background: rgba(255, 255, 255, 0.1);
-                border: 1px solid rgba(255, 255, 255, 0.2);
+            .c2pa-scan-btn {
+                background: var(--primary-red);
+                border: 1px solid var(--primary-red);
                 color: white;
                 padding: 0.5rem 1rem;
                 border-radius: 8px;
@@ -659,9 +738,31 @@ ${this.safeJSONStringify(manifest, null, 2)}</pre>
                 gap: 0.5rem;
             }
 
+            .c2pa-scan-btn:hover {
+                background: var(--primary-dark);
+                border-color: var(--primary-dark);
+                transform: translateY(-1px);
+                box-shadow: 0 4px 8px rgba(227, 30, 36, 0.2);
+            }
+
+            .c2pa-toggle-btn {
+                background: white;
+                border: 1px solid var(--neutral-300);
+                color: var(--neutral-700);
+                padding: 0.5rem 1rem;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 0.875rem;
+                font-weight: 500;
+                transition: all 0.2s;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
             .c2pa-toggle-btn:hover {
-                background: rgba(255, 255, 255, 0.2);
-                border-color: rgba(255, 255, 255, 0.4);
+                background: var(--neutral-50);
+                border-color: var(--neutral-400);
                 transform: translateY(-1px);
             }
 
@@ -714,6 +815,152 @@ ${this.safeJSONStringify(manifest, null, 2)}</pre>
                 background: rgb(148 163 184 / 0.1);
                 color: var(--neutral-600);
                 border: 2px solid var(--neutral-300);
+            }
+
+            .status-indicator.not-found {
+                background: rgb(99 102 241 / 0.1);
+                color: #6366f1;
+                border: 2px solid #6366f1;
+            }
+
+            .status-indicator.scanning {
+                background: rgb(59 130 246 / 0.1);
+                color: #3b82f6;
+                border: 2px solid #3b82f6;
+            }
+
+            .status-indicator.recovery-found {
+                background: rgb(245 158 11 / 0.1);
+                color: var(--warning-amber);
+                border: 2px solid var(--warning-amber);
+            }
+
+            .spinning {
+                animation: spin 1s linear infinite;
+            }
+
+            /* Scan Overlay Styles */
+            #c2pa-scan-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+
+            #c2pa-scan-overlay.show {
+                opacity: 1;
+            }
+
+            .scan-overlay-content {
+                background: white;
+                border-radius: 12px;
+                padding: 2rem;
+                max-width: 550px;
+                width: 90%;
+                text-align: center;
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+                transform: scale(0.9);
+                transition: transform 0.3s ease;
+            }
+
+            #c2pa-scan-overlay.show .scan-overlay-content {
+                transform: scale(1);
+            }
+
+            .scan-loading h3, .scan-results h3 {
+                margin: 1rem 0 0.5rem 0;
+                color: var(--neutral-800);
+                font-size: 1.25rem;
+                font-weight: 600;
+            }
+
+            .scan-loading p {
+                color: var(--neutral-600);
+                margin: 0.5rem 0 0 0;
+            }
+
+            .scan-spinner {
+                color: var(--primary-red);
+                animation: spin 1s linear infinite;
+            }
+
+            .result-icon {
+                margin-bottom: 1rem;
+            }
+
+            .scan-results.success .result-icon {
+                color: var(--success-green);
+            }
+
+            .scan-results.error .result-icon {
+                color: var(--error-red);
+            }
+
+            .hash-display, .similarity-display {
+                background: var(--neutral-50);
+                border: 1px solid var(--neutral-200);
+                border-radius: 8px;
+                padding: 1rem;
+                margin: 1rem 0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .hash-label, .similarity-label {
+                font-weight: 500;
+                color: var(--neutral-700);
+            }
+
+            .hash-value {
+                font-family: 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
+                font-size: 1.125rem;
+                font-weight: 600;
+                color: var(--primary-red);
+                background: white;
+                padding: 0.25rem 0.5rem;
+                border-radius: 4px;
+                border: 1px solid var(--primary-red);
+            }
+
+            .similarity-value {
+                font-weight: 600;
+                color: var(--success-green);
+            }
+
+            .error-message {
+                color: var(--error-red);
+                margin: 1rem 0;
+                padding: 1rem;
+                background: rgb(239 68 68 / 0.1);
+                border: 1px solid rgb(239 68 68 / 0.2);
+                border-radius: 8px;
+            }
+
+            .scan-close-btn {
+                background: var(--primary-red);
+                color: white;
+                border: none;
+                border-radius: 8px;
+                padding: 0.75rem 1.5rem;
+                font-size: 0.875rem;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s;
+                margin-top: 1rem;
+            }
+
+            .scan-close-btn:hover {
+                background: var(--primary-dark);
+                transform: translateY(-1px);
             }
 
             .status-text {
@@ -1101,8 +1348,16 @@ ${this.safeJSONStringify(manifest, null, 2)}</pre>
                     text-align: center;
                 }
 
+                .c2pa-header-buttons {
+                    flex-direction: column;
+                    gap: 0.5rem;
+                    align-items: stretch;
+                }
+
+                .c2pa-scan-btn,
                 .c2pa-toggle-btn {
                     align-self: center;
+                    min-width: 200px;
                 }
 
                 .manifest-chain-header {

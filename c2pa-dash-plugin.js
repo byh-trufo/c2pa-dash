@@ -141,13 +141,15 @@ async function c2pa_init(player, onPlaybackTimeUpdated) {
 
             detail['manifest'] = manifest;
 
-            if (manifest.manifestStore == null)
+            if (manifest.manifestStore == null) {
                 detail['error'] = 'null manifestStore';
-
-            if (manifest['manifestStore']['validationStatus']?.length === 0) {
+            } else if (manifest['manifestStore']['validationStatus']?.length === 0) {
                 detail['verified'] = true;
-            } else
-                detail['error'] = 'error code' + manifest.manifestStore.validationStatus[0].code;
+            } else if (manifest.manifestStore.validationStatus && manifest.manifestStore.validationStatus.length > 0) {
+                detail['error'] = 'error code: ' + manifest.manifestStore.validationStatus[0].code;
+            } else {
+                detail['error'] = 'no validation status available';
+            }
 
             ret['details'][type] = detail;
             ret['verified'] = ((ret['verified'] === true || ret['verified'] === undefined) ? true : false) && detail['verified'];

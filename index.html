@@ -505,6 +505,9 @@
         import { c2pa_init } from './c2pa-dash-plugin.js';
         import { C2PAPlayer } from './C2paPlayer/main.js';
         import { C2PAManifestDisplay } from './c2pa-manifest-display.js';
+        
+        // Import manifest recovery functionality
+        import './c2pa-manifest-recovery.js';
 
         let dashPlayer;
         var video;
@@ -958,19 +961,27 @@
                             </svg>
                         </button>
                         <div class="dropdown-content" id="demoDropdown">
-                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_hashed/RTÉ_not_signed_news_ Migrants-hashed_vt(240259)-signed/c2pa-test.mpd')">
+                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists/rte/test-rte-migrant-signed/c2pa-test.mpd')">
                                 RTE Migrants Signed
-                                <div style="font-size: 0.75rem; color: var(--neutral-500); margin-top: 0.25rem;">VT-hashed and C2PA signed content</div>
+                                <div style="font-size: 0.75rem; color: var(--neutral-500); margin-top: 0.25rem;">Test RTE migrant content with C2PA signatures</div>
                             </div>
-                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_hashed/bbc_demo_edit_unsigned-hashed_vt(240262)-signed/c2pa-test.mpd')">
+                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists/bbc/test-bbc-about-cr-edit-signed/c2pa-test.mpd')">
                                 BBC Demo Signed
-                                <div style="font-size: 0.75rem; color: var(--neutral-500); margin-top: 0.25rem;">VT-hashed and C2PA signed content</div>
+                                <div style="font-size: 0.75rem; color: var(--neutral-500); margin-top: 0.25rem;">BBC demo content with C2PA signatures</div>
+                            </div>
+                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists/bbc/test-bbc-about-cr-edit-tampered/c2pa-test.mpd')">
+                                BBC Demo Tampered
+                                <div style="font-size: 0.75rem; color: var(--neutral-500); margin-top: 0.25rem;">BBC demo content that has been tampered with</div>
+                            </div>
+                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists/rte/test-rte-migrant-tampered/c2pa-test.mpd')">
+                                RTE Migrants Tampered
+                                <div style="font-size: 0.75rem; color: var(--neutral-500); margin-top: 0.25rem;">RTE migrant content that has been tampered with</div>
                             </div>
                             <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_stripped/rte/RTÉ_not_signed_news_ Migrants-hashed_vt(240259)/c2pa-test.mpd')">
                                 RTE Migrants Stripped
                                 <div style="font-size: 0.75rem; color: var(--neutral-500); margin-top: 0.25rem;">VT-hashed content without C2PA signatures</div>
                             </div>
-                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_stripped/bbc/bbc_demo_edit_unsigned-hashed_vt(240262)/c2pa-test.mpd')">>
+                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_stripped/bbc/bbc_demo_edit_unsigned-hashed_vt(240262)/c2pa-test.mpd')">
                                 BBC Demo Stripped
                                 <div style="font-size: 0.75rem; color: var(--neutral-500); margin-top: 0.25rem;">VT-hashed content without C2PA signatures</div>
                             </div>
