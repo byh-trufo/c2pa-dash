@@ -958,9 +958,21 @@
                             </svg>
                         </button>
                         <div class="dropdown-content" id="demoDropdown">
-                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists/test-itn-signed/c2pa-test.mpd')">
-                                IBC 2025 Demo Content
-                                <div style="font-size: 0.75rem; color: var(--neutral-500); margin-top: 0.25rem;">Signed DASH stream with C2PA metadata</div>
+                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_hashed/RTÉ_not_signed_news_ Migrants-hashed_vt(240259)-signed/c2pa-test.mpd')">
+                                RTE Migrants Signed
+                                <div style="font-size: 0.75rem; color: var(--neutral-500); margin-top: 0.25rem;">VT-hashed and C2PA signed content</div>
+                            </div>
+                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_hashed/bbc_demo_edit_unsigned-hashed_vt(240262)-signed/c2pa-test.mpd')">
+                                BBC Demo Signed
+                                <div style="font-size: 0.75rem; color: var(--neutral-500); margin-top: 0.25rem;">VT-hashed and C2PA signed content</div>
+                            </div>
+                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_stripped/rte/RTÉ_not_signed_news_ Migrants-hashed_vt(240259)/c2pa-test.mpd')">
+                                RTE Migrants Stripped
+                                <div style="font-size: 0.75rem; color: var(--neutral-500); margin-top: 0.25rem;">VT-hashed content without C2PA signatures</div>
+                            </div>
+                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_stripped/bbc/bbc_demo_edit_unsigned-hashed_vt(240262)/c2pa-test.mpd')">>
+                                BBC Demo Stripped
+                                <div style="font-size: 0.75rem; color: var(--neutral-500); margin-top: 0.25rem;">VT-hashed content without C2PA signatures</div>
                             </div>
                             <div class="dropdown-item file-option" onclick="document.getElementById('mpdFile').click()">
                                 Browse Local Files

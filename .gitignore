@@ -9,3 +9,4 @@ packager-*
 
 # dev files
 _*.sh
+_*.ipynb
