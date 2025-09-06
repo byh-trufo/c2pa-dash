@@ -134,15 +134,39 @@ class C2PAManifestDisplay {
         );
         
         if (status.verified === true) {
-            statusIndicator.classList.add('verified');
-            statusIndicator.innerHTML = `
-                <svg width="16" height="16" viewBox="0 0 24 24" 
-                     fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M9 12l2 2 4-4"/>
-                    <circle cx="12" cy="12" r="10"/>
-                </svg>
-            `;
-            statusText.textContent = 'Content authenticity verified.';
+            if (status.isRecovered) {
+                statusIndicator.classList.add('recovered');
+                statusIndicator.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" 
+                         fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 12l2 2 4-4"/>
+                        <circle cx="12" cy="12" r="10"/>
+                        <circle cx="18" cy="6" r="3" fill="currentColor"/>
+                    </svg>
+                `;
+                
+                // Extract VT hash from manifest if available
+                let vtHash = '';
+                if (status.details && status.details.video && status.details.video.manifest) {
+                    const assertions = status.details.video.manifest.manifestStore.assertions || [];
+                    const hashAssertion = assertions.find(a => a.label === 'c2pa.hash.data');
+                    if (hashAssertion && hashAssertion.data && hashAssertion.data.hash) {
+                        vtHash = hashAssertion.data.hash;
+                    }
+                }
+                
+                statusText.innerHTML = `Manifest recovered. <span class="recovery-indicator">📡 Manifest recovered via VT hash${vtHash ? ' ' + vtHash : ''}</span>`;
+            } else {
+                statusIndicator.classList.add('verified');
+                statusIndicator.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" 
+                         fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 12l2 2 4-4"/>
+                        <circle cx="12" cy="12" r="10"/>
+                    </svg>
+                `;
+                statusText.textContent = 'Content authenticity verified.';
+            }
         } else if (status.verified === false) {
             statusIndicator.classList.add('failed');
             statusIndicator.innerHTML = `
@@ -186,6 +210,9 @@ class C2PAManifestDisplay {
 
         let html = '<div class="manifest-summary">';
         
+        // Add manifest summary section first
+        html += this.generateManifestSummarySection(status);
+        
         // C2PA Manifest Chain section with toggle
         html += this.generateManifestChainSection(status);
 
@@ -202,6 +229,224 @@ class C2PAManifestDisplay {
 
         html += '</div>';
         manifestContent.innerHTML = html;
+    }
+
+    /**
+     * Generate HTML for the manifest summary section with key information
+     * @param {Object} status - The C2PA status object containing manifest data
+     * @returns {string} HTML string for the manifest summary section
+     */
+    generateManifestSummarySection(status) {
+        // Find the best manifest data (prioritize video over audio)
+        let manifestData = null;
+        if (status.details) {
+            if (status.details.video && status.details.video.manifest) {
+                manifestData = status.details.video.manifest;
+            } else if (status.details.audio && status.details.audio.manifest) {
+                manifestData = status.details.audio.manifest;
+            }
+        }
+
+        console.log('[C2PA Display] Summary section - manifestData:', manifestData);
+
+        if (!manifestData) {
+            return `<div class="manifest-section manifest-summary-section">
+                <h4>Summary</h4>
+                <div class="summary-content">
+                    <p class="no-summary-data">No manifest data available for summary</p>
+                </div>
+            </div>`;
+        }
+
+        // Extract key information from the real manifest structure
+        let issuedBy = 'Unknown';
+        let appOrDevice = 'Unknown';
+
+        console.log('[C2PA Display] Checking manifest structure...');
+        console.log('[C2PA Display] manifestData.manifests exists:', !!manifestData.manifests);
+        console.log('[C2PA Display] manifestData.manifestStore exists:', !!manifestData.manifestStore);
+
+        // Check if this is the new manifest structure with manifests object
+        if (manifestData.manifests && typeof manifestData.manifests === 'object') {
+            console.log('[C2PA Display] Using new manifest structure');
+            // Get the first manifest (there should be only one active manifest)
+            const manifestKeys = Object.keys(manifestData.manifests);
+            console.log('[C2PA Display] Manifest keys:', manifestKeys);
+            
+            if (manifestKeys.length > 0) {
+                const activeManifest = manifestData.manifests[manifestKeys[0]];
+                console.log('[C2PA Display] Active manifest:', activeManifest);
+                
+                // Extract issuer from signatureInfo.issuer
+                if (activeManifest.signatureInfo && activeManifest.signatureInfo.issuer) {
+                    issuedBy = activeManifest.signatureInfo.issuer;
+                    console.log('[C2PA Display] Found issuer:', issuedBy);
+                }
+                
+                // Extract app/device from claimGenerator
+                if (activeManifest.claimGenerator) {
+                    appOrDevice = activeManifest.claimGenerator;
+                    console.log('[C2PA Display] Found claimGenerator:', appOrDevice);
+                }
+            }
+        } else if (manifestData.manifestStore) {
+            console.log('[C2PA Display] Using manifestStore structure');
+            
+            // Check if the data is in manifestStore.activeManifest (the actual structure we're seeing)
+            if (manifestData.manifestStore.activeManifest) {
+                console.log('[C2PA Display] Found activeManifest in manifestStore');
+                const activeManifest = manifestData.manifestStore.activeManifest;
+                console.log('[C2PA Display] Active manifest from manifestStore:', activeManifest);
+                
+                // Extract issuer from signatureInfo.issuer
+                if (activeManifest.signatureInfo && activeManifest.signatureInfo.issuer) {
+                    issuedBy = activeManifest.signatureInfo.issuer;
+                    console.log('[C2PA Display] Found issuer in manifestStore:', issuedBy);
+                }
+                
+                // Extract app/device from claimGenerator
+                if (activeManifest.claimGenerator) {
+                    appOrDevice = activeManifest.claimGenerator;
+                    console.log('[C2PA Display] Found claimGenerator in manifestStore:', appOrDevice);
+                }
+            } else {
+                console.log('[C2PA Display] Using old manifestStore structure');
+                // Fallback to old manifest structure for backwards compatibility
+                const manifestStore = manifestData.manifestStore;
+                
+                // Look for issuer information in claims
+                if (manifestStore.claims && manifestStore.claims.length > 0) {
+                    for (const claim of manifestStore.claims) {
+                        if (claim.label && claim.label.includes('creator') && claim.signature) {
+                            issuedBy = claim.signature;
+                            break;
+                        }
+                    }
+                }
+
+                // Look for software agent information in assertions
+                if (manifestStore.assertions && manifestStore.assertions.length > 0) {
+                    for (const assertion of manifestStore.assertions) {
+                        if (assertion.label === 'c2pa.actions' && assertion.data && assertion.data.actions) {
+                            // Find the most recent action with software agent
+                            const actionsWithAgent = assertion.data.actions.filter(action => action.softwareAgent);
+                            if (actionsWithAgent.length > 0) {
+                                // Get the most recent action (last in array)
+                                appOrDevice = actionsWithAgent[actionsWithAgent.length - 1].softwareAgent;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                // If we didn't find creator in claims, try assertions
+                if (issuedBy === 'Unknown' && manifestStore.assertions) {
+                    for (const assertion of manifestStore.assertions) {
+                        if (assertion.label === 'c2pa.creative.work' && assertion.data && assertion.data.author) {
+                            if (Array.isArray(assertion.data.author) && assertion.data.author.length > 0) {
+                                issuedBy = assertion.data.author[0].name || assertion.data.author[0].identifier || 'Unknown';
+                            } else if (typeof assertion.data.author === 'string') {
+                                issuedBy = assertion.data.author;
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        console.log('[C2PA Display] Final extracted values:');
+        console.log('[C2PA Display] issuedBy:', issuedBy);
+        console.log('[C2PA Display] appOrDevice:', appOrDevice);
+
+        // For recovered manifests, check if we have recovery-specific information
+        if (status.isRecovered) {
+            // Extract VT hash if available
+            let vtHashInfo = '';
+            
+            // Check in new manifest structure
+            if (manifestData.manifests) {
+                const manifestKeys = Object.keys(manifestData.manifests);
+                if (manifestKeys.length > 0) {
+                    const activeManifest = manifestData.manifests[manifestKeys[0]];
+                    if (activeManifest.assertions && activeManifest.assertions.data) {
+                        for (const assertion of activeManifest.assertions.data) {
+                            if (assertion.label === 'c2pa.hash.data' && assertion.data && assertion.data.hash) {
+                                vtHashInfo = ` (VT Hash: ${assertion.data.hash})`;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Check old structure for recovery info
+            if (manifestData.manifestStore && manifestData.manifestStore.assertions) {
+                for (const assertion of manifestData.manifestStore.assertions) {
+                    if (assertion.label === 'c2pa.recovery.info' && assertion.data) {
+                        if (assertion.data.source) {
+                            issuedBy = `${issuedBy} via ${assertion.data.source}`;
+                        }
+                        if (assertion.data.method) {
+                            appOrDevice = `${appOrDevice} (Recovered via ${assertion.data.method})`;
+                        }
+                        break;
+                    }
+                }
+            }
+            
+            if (vtHashInfo) {
+                appOrDevice = `${appOrDevice}${vtHashInfo}`;
+            }
+        }
+
+        return `<div class="manifest-section manifest-summary-section">
+            <h4>Summary</h4>
+            <div class="summary-content">
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <div class="summary-label">
+                            <svg width="16" height="16" viewBox="0 0 24 24" 
+                                 fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            Issued By
+                        </div>
+                        <div class="summary-value">${this.escapeHtml(issuedBy)}</div>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <div class="summary-label">
+                            <svg width="16" height="16" viewBox="0 0 24 24" 
+                                 fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/>
+                                <line x1="7" y1="2" x2="7" y2="22"/>
+                                <line x1="17" y1="2" x2="17" y2="22"/>
+                                <line x1="2" y1="12" x2="22" y2="12"/>
+                                <line x1="2" y1="7" x2="7" y2="7"/>
+                                <line x1="2" y1="17" x2="7" y2="17"/>
+                                <line x1="17" y1="17" x2="22" y2="17"/>
+                                <line x1="17" y1="7" x2="22" y2="7"/>
+                            </svg>
+                            App or Device Used
+                        </div>
+                        <div class="summary-value">${this.escapeHtml(appOrDevice)}</div>
+                    </div>
+                </div>
+                
+                ${status.isRecovered ? `
+                    <div class="recovery-notice">
+                        <svg width="16" height="16" viewBox="0 0 24 24" 
+                             fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/>
+                        </svg>
+                        <span>This manifest was recovered via fingerprint or watermark lookup.</span>
+                    </div>
+                ` : ''}
+            </div>
+        </div>`;
     }
 
     /**
@@ -567,6 +812,17 @@ ${this.safeJSONStringify(manifest, null, 2)}</pre>
     }
 
     /**
+     * Escape HTML characters to prevent XSS
+     * @param {string} text - Text to escape
+     * @returns {string} Escaped HTML string
+     */
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    /**
      * Demo function to test the display with mock C2PA data
      */
     showDemo() {
@@ -835,6 +1091,66 @@ ${this.safeJSONStringify(manifest, null, 2)}</pre>
                 border: 2px solid var(--warning-amber);
             }
 
+            .status-indicator.recovered {
+                background: rgb(16 185 129 / 0.1);
+                color: var(--success-green);
+                border: 2px solid var(--success-green);
+                position: relative;
+            }
+
+            .status-indicator.recovered::after {
+                content: '📡';
+                position: absolute;
+                top: -4px;
+                right: -4px;
+                font-size: 10px;
+                background: white;
+                border-radius: 50%;
+                width: 16px;
+                height: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: 1px solid var(--success-green);
+            }
+
+            .recovery-indicator {
+                color: var(--warning-amber);
+                font-weight: 500;
+                font-size: 0.875rem;
+            }
+
+            .recovery-badge {
+                background: linear-gradient(135deg, #f59e0b, #d97706);
+                color: white;
+                padding: 0.375rem 0.75rem;
+                border-radius: 20px;
+                font-size: 0.75rem;
+                font-weight: 600;
+                margin-bottom: 1rem;
+                display: inline-block;
+                box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+            }
+
+            .load-manifest-btn {
+                background: var(--warning-amber);
+                color: white;
+                border: none;
+                border-radius: 8px;
+                padding: 0.75rem 1.5rem;
+                font-size: 0.875rem;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s;
+                margin-top: 0.5rem;
+                margin-left: 0.5rem;
+            }
+
+            .load-manifest-btn:hover {
+                background: #d97706;
+                transform: translateY(-1px);
+            }
+
             .spinning {
                 animation: spin 1s linear infinite;
             }
@@ -991,6 +1307,111 @@ ${this.safeJSONStringify(manifest, null, 2)}</pre>
 
             .manifest-section:last-child {
                 margin-bottom: 0;
+            }
+
+            .manifest-summary-section {
+                background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+                border: 1px solid var(--neutral-200);
+                border-radius: 12px;
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .manifest-summary-section h4 {
+                color: var(--primary-red);
+                font-weight: 600;
+                margin-bottom: 1.25rem;
+                font-size: 1.125rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                border-bottom: 2px solid var(--primary-red);
+                padding-bottom: 0.75rem;
+            }
+
+            .manifest-summary-section h4::before {
+                content: '📋';
+                font-size: 1.25rem;
+            }
+
+            .summary-content {
+                display: flex;
+                flex-direction: column;
+                gap: 1.25rem;
+            }
+
+            .summary-grid {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .summary-item {
+                background: white;
+                border: 1px solid var(--neutral-200);
+                border-radius: 8px;
+                padding: 1rem;
+                transition: all 0.2s ease;
+            }
+
+            .summary-item:hover {
+                border-color: var(--primary-red);
+                box-shadow: 0 2px 8px rgba(227, 30, 36, 0.1);
+            }
+
+            .summary-label {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                font-weight: 600;
+                font-size: 0.875rem;
+                color: var(--neutral-700);
+                margin-bottom: 0.5rem;
+            }
+
+            .summary-label svg {
+                color: var(--primary-red);
+                flex-shrink: 0;
+            }
+
+            .summary-value {
+                font-size: 0.9375rem;
+                color: var(--neutral-900);
+                font-weight: 500;
+                line-height: 1.4;
+                word-break: break-word;
+            }
+
+            .recovery-notice {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                background: linear-gradient(135deg, #fef3c7, #fde68a);
+                border: 1px solid #f59e0b;
+                border-radius: 8px;
+                padding: 1rem;
+                font-size: 0.875rem;
+                font-weight: 500;
+                color: #92400e;
+            }
+
+            .recovery-notice svg {
+                color: #d97706;
+                flex-shrink: 0;
+                animation: pulse 2s infinite;
+            }
+
+            .no-summary-data {
+                text-align: center;
+                color: var(--neutral-600);
+                font-style: italic;
+                margin: 0;
+                padding: 1rem;
+            }
+
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.5; }
             }
 
             .manifest-section h4 {
@@ -1396,6 +1817,28 @@ ${this.safeJSONStringify(manifest, null, 2)}</pre>
 
                 .c2pa-manifest-content {
                     padding: 1rem;
+                }
+
+                .manifest-summary-section {
+                    padding: 1rem;
+                }
+
+                .summary-grid {
+                    grid-template-columns: 1fr;
+                    gap: 0.75rem;
+                }
+
+                .recovery-notice {
+                    flex-direction: column;
+                    text-align: center;
+                    gap: 0.5rem;
+                }
+            }
+
+            @media (min-width: 769px) {
+                .summary-grid {
+                    grid-template-columns: 1fr 1fr;
+                    gap: 1.25rem;
                 }
             }
 
