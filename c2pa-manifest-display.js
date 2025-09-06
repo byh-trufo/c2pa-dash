@@ -7,6 +7,7 @@ class C2PAManifestDisplay {
         this.container = document.getElementById(containerId);
         this.currentManifestData = null;
         this.isExpanded = false;
+        this.isManifestRecovered = false; // Flag to prevent overriding recovered manifests
         
         if (!this.container) {
             console.error(`C2PAManifestDisplay: Container with ID '${containerId}' not found`);
@@ -101,6 +102,22 @@ class C2PAManifestDisplay {
         }
 
         console.log('[C2PA Display] Updating with status:', c2paStatus);
+        
+        // Check if this is a recovered manifest
+        const isRecoveredManifest = c2paStatus.isRecovered === true;
+        
+        // If we already have a recovered manifest and this is NOT a recovered manifest, ignore the update
+        if (this.isManifestRecovered && !isRecoveredManifest) {
+            console.log('[C2PA Display] Ignoring update - recovered manifest is already loaded and this is not a recovery');
+            return;
+        }
+        
+        // If this is a recovered manifest, set the flag and lock future updates
+        if (isRecoveredManifest) {
+            console.log('[C2PA Display] Setting recovered manifest flag - future non-recovery updates will be ignored');
+            this.isManifestRecovered = true;
+        }
+        
         this.currentManifestData = c2paStatus;
         
         // Update status indicator
@@ -692,6 +709,7 @@ ${this.safeJSONStringify(manifest, null, 2)}</pre>
     reset() {
         this.currentManifestData = null;
         this.isExpanded = false;
+        this.isManifestRecovered = false; // Reset recovery flag
         this.initializeDisplay();
     }
 

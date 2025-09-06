@@ -114,6 +114,7 @@ class ManifestRecoveryService {
     getFallbackVTHash(mpdUrl) {
         console.log('[Manifest Recovery] Checking fallback for URL:', mpdUrl);
         
+        // Hardcoded DB.
         const fallbackMap = {
             'rte_migrants_stripped': {
                 hashId: '240259',
@@ -465,6 +466,13 @@ class ManifestRecoveryUI {
                 console.log('[Manifest Recovery UI] Updating C2PA display...');
                 // Update the C2PA display with recovered manifest
                 window.c2paDisplay.updateDisplay(manifestData);
+                
+                // Add orange scrub bar styling for recovered manifests
+                const videoPlayer = document.getElementById('videoPlayer');
+                if (videoPlayer) {
+                    videoPlayer.classList.add('manifest-recovered');
+                    console.log('[Manifest Recovery UI] Added orange scrub bar styling for recovered manifest');
+                }
                 
                 // Hide the overlay
                 console.log('[Manifest Recovery UI] Hiding overlay...');

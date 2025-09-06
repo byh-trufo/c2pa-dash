@@ -17,6 +17,15 @@
   .video-js .vjs-progress-holder .vjs-play-progress {
     background-color: var(--c2pa-unknown);
   }
+
+  /* Orange progress bar for recovered manifests */
+  .video-js.manifest-recovered .vjs-progress-holder .vjs-play-progress {
+    background-color: #FF6B35 !important; /* Orange color */
+  }
+  
+  .video-js.manifest-recovered .vjs-progress-control {
+    color: #FF6B35 !important; /* Orange color */
+  }
   .vjs-icon-chapters:before, .video-js .vjs-chapters-button .vjs-icon-placeholder:before {
     content: ''
 }
