@@ -132,7 +132,7 @@ let createTimelineSegment = function (
     const playProgressControl = videoPlayer
       .el()
       .querySelector('.vjs-play-progress');
-    
+
     // Check if the manifest is recovered and override with orange color
     const videoPlayerElement = videoPlayer.el();
     if (videoPlayerElement && videoPlayerElement.classList.contains('manifest-recovered')) {

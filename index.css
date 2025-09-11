@@ -5,7 +5,7 @@
     --c2pa-unknown: rgb(172, 172, 172);
     --background: rgba(0, 0, 0, 0.7);
   }
-  
+
   /***TIMELINE CSS***/
   /* Default colors for the videojs timeline and tooltip */
   .video-js .vjs-control-bar {
@@ -22,7 +22,7 @@
   .video-js.manifest-recovered .vjs-progress-holder .vjs-play-progress {
     background-color: #FF6B35 !important; /* Orange color */
   }
-  
+
   .video-js.manifest-recovered .vjs-progress-control {
     color: #FF6B35 !important; /* Orange color */
   }
@@ -43,7 +43,7 @@ line-height: 0.5em;
 z-index: 100;
 }
 
- 
+
 .video-js .vjs-play-progress:after{
     font-size: 1.5em;
     line-height: 0.5em;
@@ -105,7 +105,7 @@ z-index: 100;
     background-color: var(--background);
     padding: 1.25rem;
   }
-  
+
   /* Style of the c2pa menu items */
   .vjs-menu li.vjs-menu-title {
     display: flex;
@@ -136,11 +136,11 @@ z-index: 100;
     font-weight: 400;
     font-size: 0.75rem;
   }
-  
+
   .vjs-menu li.vjs-menu-item:last-child {
     border-top: none;
   }
-  
+
   .vjs-menu li.vjs-menu-item vjs-menu-item-text {
     justify-content: center !important;
   }
@@ -149,9 +149,9 @@ z-index: 100;
   .js-focus-visible .vjs-menu li.vjs-menu-item:hover {
     background: none;
   }
-  
-  
-  
+
+
+
   .friction-overlay {
     position: absolute;
     bottom: 40px;
@@ -164,25 +164,25 @@ z-index: 100;
     font-size: 1em;
     color: #fff;
   }
-  
+
   .friction-overlay .friction-button {
     background-color: #007bff;
     border-radius: 5px;
     padding: 5px;
     float: right;
   }
-  
+
   .vjs-menu li.vjs-menu-item .itemName {
     font-weight: 700;
     padding-bottom: 4px;
   }
 
 
-  
+
   .vjs-menu .url {
     color: #4b9cf5;
   }
-  
+
   .vjs-menu li.vjs-menu-item .alert-div {
     width: 100%;
     background-color: var(--c2pa-failed);
@@ -191,16 +191,16 @@ z-index: 100;
     display: flex;
     align-items: flex-start;
   }
-  
+
   .vjs-menu li.vjs-menu-item .alert-icon {
     content: url('./assets/icons/alert.svg');
     padding-right: 10px;
   }
-  
+
   .validation-padding {
     padding-bottom: 0px !important;
   }
-  
+
   /* Disable hover effect on c2pa menu */
   .vjs-workinghover .vjs-menu-button-popup:hover .vjs-menu {
     display: none;

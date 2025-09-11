@@ -19,39 +19,39 @@ class ManifestRecoveryService {
 
         try {
             const config = {"algorithms": ["vt"]};
-            
+
             // Create FormData correctly
             const formData = new FormData();
             formData.append('playlist_url', mpdUrl);
             formData.append('config', JSON.stringify(config));
-            
+
             // Create AbortController for 60-second timeout
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 60000);
-            
+
             const response = await fetch(`${this.apiUrl}/api/v1/query/hashes/by-mpd-playlist`, {
                 method: 'POST',
                 body: formData,
                 signal: controller.signal
             });
-            
+
             clearTimeout(timeoutId);
-            
+
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
-            
+
             const result = await response.json();
-            
+
             if (result.status === 'success' && result.data && result.data.length > 0) {
                 // Find the entry with highest similarity
-                const bestMatch = result.data.reduce((best, current) => 
+                const bestMatch = result.data.reduce((best, current) =>
                     current.similarity > best.similarity ? current : best
                 );
-                
+
                 // Map hash ID to signed manifest URL
                 const signedUrl = this.getManifestUrlFromHashId(bestMatch.hash);
-                
+
                 if (signedUrl) {
                     return {
                         success: true,
@@ -73,7 +73,7 @@ class ManifestRecoveryService {
                     error: 'No VT hash found for this content'
                 };
             }
-            
+
         } catch (error) {
             console.error('[Manifest Recovery] VSE call failed:', error);
             console.error('[Manifest Recovery] Error details:', {
@@ -83,14 +83,14 @@ class ManifestRecoveryService {
                 url: `${this.apiUrl}/api/v1/query/hashes/by-mpd-playlist`,
                 timestamp: new Date().toISOString()
             });
-            
+
             // Fallback to hardcoded VT hashes for known content
             console.warn('[Manifest Recovery] VSE query failed, using hardcoded VT hash fallback');
             const fallbackResult = this.getFallbackVTHash(mpdUrl);
             if (fallbackResult) {
                 return fallbackResult;
             }
-            
+
             return {
                 success: false,
                 error: error.message || 'Failed to connect to manifest recovery service'
@@ -111,7 +111,7 @@ class ManifestRecoveryService {
             '240254': 'https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_hashed/bbc-live-ugc-hashed_vt(240254)-signed/c2pa-test.mpd',
             '240262': 'https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_hashed/bbc_demo_edit_unsigned-hashed_vt(240262)-signed/c2pa-test.mpd'
         };
-        
+
         return hashIdToUrlMap[hashId] || null;
     }
 
@@ -139,7 +139,7 @@ class ManifestRecoveryService {
      */
     getFallbackVTHash(mpdUrl) {
         console.log('[Manifest Recovery] Checking fallback for URL:', mpdUrl);
-        
+
         // Hardcoded DB based on VT IDs extracted from URLs
         const fallbackMap = {
             '240257': {
@@ -163,7 +163,7 @@ class ManifestRecoveryService {
                 signedUrl: 'https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_hashed/bbc-live-ugc-hashed_vt(240254)-signed/c2pa-test.mpd'
             },
             '240262': {
-                hashId: '240262', 
+                hashId: '240262',
                 similarity: 97.8,
                 signedUrl: 'https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_hashed/bbc_demo_edit_unsigned-hashed_vt(240262)-signed/c2pa-test.mpd'
             }
@@ -174,7 +174,7 @@ class ManifestRecoveryService {
         if (vtIdMatch) {
             const vtId = vtIdMatch[1];
             console.log('[Manifest Recovery] Extracted VT ID from URL:', vtId);
-            
+
             if (fallbackMap[vtId]) {
                 const data = fallbackMap[vtId];
                 console.warn(`[Manifest Recovery] Using hardcoded VT hash ${data.hashId} for VT ID ${vtId}`);
@@ -197,79 +197,114 @@ class ManifestRecoveryService {
     }
 
     /**
+     * Create a basic manifest placeholder when C2PA extraction fails
+     * @param {string} signedUrl - URL of the signed content
+     * @returns {Object} - Basic manifest structure
+     */
+    createBasicManifestPlaceholder(signedUrl) {
+        return {
+            verified: false,
+            isRecovered: true,
+            isPlaceholder: true,
+            details: {
+                placeholder: {
+                    manifest: {
+                        title: 'Recovered Content',
+                        signedUrl: signedUrl,
+                        note: 'Basic recovery info - full manifest extraction requires HTTPS'
+                    },
+                    thumbnail: null
+                }
+            }
+        };
+    }
+
+    /**
      * Retrieve C2PA manifest from signed content URL
      * @param {string} signedUrl - URL of the signed content
      * @returns {Promise<Object|null>} - C2PA manifest data or null
      */
     async retrieveC2PAManifest(signedUrl) {
+        const self = this; // Capture this reference for use inside Promise
         try {
             console.log('[Manifest Recovery] Retrieving C2PA manifest from:', signedUrl);
-            
+
             return new Promise(async (resolve, reject) => {
                 // Create a temporary video element and DASH player instance
                 const tempVideo = document.createElement('video');
                 tempVideo.style.display = 'none';
                 tempVideo.muted = true; // Ensure it's muted
                 document.body.appendChild(tempVideo);
-                
+
                 const tempPlayer = dashjs.MediaPlayer().create();
                 let manifestExtracted = false;
                 let extractTimeout;
-                
+
                 // Add more detailed event logging
                 console.log('[Manifest Recovery] Setting up event listeners...');
-                
+
                 // Initialize C2PA plugin on temporary player
                 try {
                     console.log('[Manifest Recovery] Initializing C2PA plugin...');
-                    
+
                     // Import and initialize C2PA plugin
                     const { c2pa_init } = await import('./c2pa-dash-plugin.js');
-                    
+
                     await c2pa_init(tempPlayer, (event) => {
                         console.log('[Manifest Recovery] C2PA playback time updated:', event);
-                        
+
                         if (!manifestExtracted && event.c2pa_status && event.c2pa_status.details) {
                             // Check if we have a valid manifest in any media type
                             for (const [mediaType, detail] of Object.entries(event.c2pa_status.details)) {
                                 if (detail.manifest && detail.manifest.manifestStore) {
                                     console.log('[Manifest Recovery] C2PA manifest extracted from', mediaType, ':', detail);
                                     manifestExtracted = true;
-                                    
+
                                     // Clean up
                                     clearTimeout(extractTimeout);
                                     tempPlayer.destroy();
                                     document.body.removeChild(tempVideo);
-                                    
+
                                     // Add recovery flag to the manifest data
                                     const recoveredManifest = {
                                         verified: event.c2pa_status.verified,
                                         isRecovered: true,
                                         details: event.c2pa_status.details
                                     };
-                                    
+
                                     resolve(recoveredManifest);
                                     return;
                                 }
                             }
                         }
                     });
-                    
+
                     console.log('[Manifest Recovery] C2PA plugin initialized successfully');
                 } catch (c2paError) {
                     console.error('[Manifest Recovery] Failed to initialize C2PA plugin:', c2paError);
                     clearTimeout(extractTimeout);
                     tempPlayer.destroy();
                     document.body.removeChild(tempVideo);
-                    reject(new Error('Failed to initialize C2PA plugin for manifest extraction'));
+
+                    // Check for specific HTTPS/compatibility error and provide fallback
+                    if (c2paError.message && (c2paError.message.includes('HTTPS is not being used') || c2paError.message.includes('browser you are using isn\'t compatible'))) {
+                        console.warn('[Manifest Recovery] C2PA extraction not available, providing basic placeholder');
+                        // Provide a basic placeholder manifest instead of failing completely
+                        const placeholderManifest = self.createBasicManifestPlaceholder(signedUrl);
+                        resolve(placeholderManifest);
+                        return;
+                    }
+
+                    // For other unexpected errors, reject with specific error types
+                    reject(new Error('C2PA_INIT_FAILED: Failed to initialize C2PA plugin for manifest extraction: ' + c2paError.message));
                     return;
                 }
-                
+
                 // Add more comprehensive event listeners for debugging
                 tempPlayer.on(dashjs.MediaPlayer.events.MANIFEST_LOADED, (event) => {
                     console.log('[Manifest Recovery] MANIFEST_LOADED:', event);
                 });
-                
+
                 tempPlayer.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, (event) => {
                     console.log('[Manifest Recovery] STREAM_INITIALIZED:', event);
                     // Try to start playback to trigger manifest processing
@@ -292,7 +327,7 @@ class ManifestRecoveryService {
                         }
                     }, 1000);
                 });
-                
+
                 // Set up error handling
                 tempPlayer.on(dashjs.MediaPlayer.events.ERROR, (event) => {
                     console.error('[Manifest Recovery] DASH player error:', event);
@@ -301,7 +336,7 @@ class ManifestRecoveryService {
                     document.body.removeChild(tempVideo);
                     reject(new Error('Failed to load signed content for manifest extraction'));
                 });
-                
+
                 // Set timeout to avoid hanging indefinitely - increase to 30 seconds
                 extractTimeout = setTimeout(() => {
                     console.warn('[Manifest Recovery] Manifest extraction timeout');
@@ -311,12 +346,12 @@ class ManifestRecoveryService {
                         reject(new Error('Timeout waiting for C2PA manifest extraction'));
                     }
                 }, 30000); // Increased to 30 second timeout
-                
+
                 // Initialize the temporary player with the signed URL
                 console.log('[Manifest Recovery] Initializing temporary player...');
                 tempPlayer.initialize(tempVideo, signedUrl, false); // autoPlay = false
             });
-            
+
         } catch (error) {
             console.error('[Manifest Recovery] Failed to retrieve C2PA manifest:', error);
             return null;
@@ -343,26 +378,26 @@ class ManifestRecoveryUI {
      */
     async startScan(mpdUrl) {
         console.log('[Manifest Recovery UI] Starting scan for:', mpdUrl);
-        
+
         // Show loading overlay
         this.showLoadingOverlay();
-        
+
         // Add a small delay to ensure loading overlay is visible before showing results
         await new Promise(resolve => setTimeout(resolve, 500));
-        
+
         try {
             // Perform the scan
             console.log('[Manifest Recovery UI] Calling service.scanForManifestRecovery...');
             const results = await this.service.scanForManifestRecovery(mpdUrl);
             console.log('[Manifest Recovery UI] Scan results:', results);
-            
+
             // Store results for potential manifest loading
             this.lastScanResults = results;
-            
+
             // Show results
             console.log('[Manifest Recovery UI] Calling showResults...');
             this.showResults(results);
-            
+
             // If using backup VT hash, show notification for 1 second, then load manifest
             if (results.success && results.isRecovered) {
                 console.log('[Manifest Recovery UI] Showing recovery notification for 1 second...');
@@ -371,7 +406,7 @@ class ManifestRecoveryUI {
                     this.loadRecoveredManifest();
                 }, 1000); // Show notification for 1 second
             }
-            
+
         } catch (error) {
             console.error('[Manifest Recovery UI] Error in startScan:', error);
             // Show error
@@ -388,14 +423,14 @@ class ManifestRecoveryUI {
     showLoadingOverlay() {
         // Remove any existing overlay
         this.hideOverlay();
-        
+
         // Create overlay
         const overlay = document.createElement('div');
         overlay.id = this.overlayId;
         overlay.innerHTML = `
             <div class="scan-overlay-content">
                 <div class="scan-loading">
-                    <svg class="scan-spinner" width="48" height="48" viewBox="0 0 24 24" 
+                    <svg class="scan-spinner" width="48" height="48" viewBox="0 0 24 24"
                          fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="11" cy="11" r="8"/>
                         <path d="M21 21l-4.35-4.35"/>
@@ -405,9 +440,9 @@ class ManifestRecoveryUI {
                 </div>
             </div>
         `;
-        
+
         document.body.appendChild(overlay);
-        
+
         // Trigger animation
         setTimeout(() => overlay.classList.add('show'), 10);
     }
@@ -418,7 +453,7 @@ class ManifestRecoveryUI {
      */
     showResults(results) {
         console.log('[Manifest Recovery UI] showResults called with:', results);
-        
+
         try {
             const overlay = document.getElementById(this.overlayId);
             console.log('[Manifest Recovery UI] Overlay element:', overlay);
@@ -426,16 +461,16 @@ class ManifestRecoveryUI {
                 console.error('[Manifest Recovery UI] Overlay not found!');
                 return;
             }
-            
+
             const content = overlay.querySelector('.scan-overlay-content');
             console.log('[Manifest Recovery UI] Content element:', content);
             if (!content) {
                 console.error('[Manifest Recovery UI] Overlay content not found!');
                 return;
             }
-            
+
             console.log('[Manifest Recovery UI] Updating overlay content...');
-            
+
             if (results.success) {
                 console.log('[Manifest Recovery UI] Results indicate success, isRecovered:', results.isRecovered);
                 if (results.isRecovered) {
@@ -443,7 +478,7 @@ class ManifestRecoveryUI {
                     // Show success message for backup VT hash
                     content.innerHTML = `
                         <div class="scan-results success">
-                            <svg width="64" height="64" viewBox="0 0 24 24" 
+                            <svg width="64" height="64" viewBox="0 0 24 24"
                                  fill="none" stroke="currentColor" stroke-width="2" class="result-icon">
                                 <path d="M9 12l2 2 4-4"/>
                                 <circle cx="12" cy="12" r="10"/>
@@ -458,7 +493,7 @@ class ManifestRecoveryUI {
                 // Show normal VT hash result
                 content.innerHTML = `
                     <div class="scan-results success">
-                        <svg width="64" height="64" viewBox="0 0 24 24" 
+                        <svg width="64" height="64" viewBox="0 0 24 24"
                              fill="none" stroke="currentColor" stroke-width="2" class="result-icon">
                             <path d="M9 12l2 2 4-4"/>
                             <circle cx="12" cy="12" r="10"/>
@@ -480,30 +515,48 @@ class ManifestRecoveryUI {
                 console.log('[Manifest Recovery UI] Showing normal VT hash result');
             }
         } else {
+            // Parse error type for better user messaging
+            let errorTitle = "No Manifest Found";
+            let errorMessage = results.error;
+            let autoCloseTime = 3000;
+
+            if (results.error.startsWith('HTTPS_REQUIRED:')) {
+                errorTitle = "HTTPS Required";
+                errorMessage = "Manifest recovery requires HTTPS in production environments. Please access this page via HTTPS to use this feature.";
+                autoCloseTime = 5000; // Give more time to read
+            } else if (results.error.startsWith('BROWSER_INCOMPATIBLE:')) {
+                errorTitle = "Browser Not Supported";
+                errorMessage = "Your browser doesn't support the C2PA features required for manifest recovery. Please try Chrome, Firefox, or Safari.";
+                autoCloseTime = 5000;
+            } else if (results.error.startsWith('C2PA_INIT_FAILED:')) {
+                errorTitle = "C2PA Initialization Failed";
+                errorMessage = "Failed to initialize C2PA components. This may be due to browser security restrictions.";
+            }
+
             content.innerHTML = `
                 <div class="scan-results error">
-                    <svg width="64" height="64" viewBox="0 0 24 24" 
+                    <svg width="64" height="64" viewBox="0 0 24 24"
                          fill="none" stroke="currentColor" stroke-width="2" class="result-icon">
                         <circle cx="12" cy="12" r="10"/>
                         <line x1="15" y1="9" x2="9" y2="15"/>
                         <line x1="9" y1="9" x2="15" y2="15"/>
                     </svg>
-                    <h3>No Manifest Found</h3>
-                    <p class="error-message">${results.error}</p>
+                    <h3>${errorTitle}</h3>
+                    <p class="error-message">${errorMessage}</p>
                     <button class="scan-close-btn" onclick="window.manifestRecoveryUI.hideOverlay()">
                         Close
                     </button>
                 </div>
             `;
-            console.log('[Manifest Recovery UI] Showing error result');
-            
-            // Auto-close error overlay after 3 seconds
+            console.log('[Manifest Recovery UI] Showing error result:', errorTitle);
+
+            // Auto-close error overlay with appropriate timing
             setTimeout(() => {
                 console.log('[Manifest Recovery UI] Auto-closing error overlay...');
                 this.hideOverlay();
-            }, 3000);
+            }, autoCloseTime);
         }
-        
+
         } catch (error) {
             console.error('[Manifest Recovery UI] Error in showResults:', error);
         }
@@ -515,7 +568,7 @@ class ManifestRecoveryUI {
     async loadRecoveredManifest() {
         console.log('[Manifest Recovery UI] loadRecoveredManifest called');
         console.log('[Manifest Recovery UI] lastScanResults:', this.lastScanResults);
-        
+
         if (!this.lastScanResults || !this.lastScanResults.isRecovered || !this.lastScanResults.signedUrl) {
             console.error('[Manifest Recovery UI] No recovered manifest data available');
             return;
@@ -526,23 +579,23 @@ class ManifestRecoveryUI {
             // Get the recovered manifest data
             const manifestData = await this.service.retrieveC2PAManifest(this.lastScanResults.signedUrl);
             console.log('[Manifest Recovery UI] Retrieved manifest data:', manifestData);
-            
+
             if (manifestData && window.c2paDisplay) {
                 console.log('[Manifest Recovery UI] Updating C2PA display...');
                 // Update the C2PA display with recovered manifest
                 window.c2paDisplay.updateDisplay(manifestData);
-                
+
                 // Add orange scrub bar styling for recovered manifests
                 const videoPlayer = document.getElementById('videoPlayer');
                 if (videoPlayer) {
                     videoPlayer.classList.add('manifest-recovered');
                     console.log('[Manifest Recovery UI] Added orange scrub bar styling for recovered manifest');
                 }
-                
+
                 // Hide the overlay
                 console.log('[Manifest Recovery UI] Hiding overlay...');
                 this.hideOverlay();
-                
+
                 console.log('[Manifest Recovery UI] Recovered manifest loaded successfully');
             } else {
                 console.error('[Manifest Recovery UI] Failed to load recovered manifest');
@@ -550,7 +603,18 @@ class ManifestRecoveryUI {
             }
         } catch (error) {
             console.error('[Manifest Recovery UI] Error loading recovered manifest:', error);
-            this.showAlert('Error loading recovered manifest: ' + error.message);
+
+            // Provide specific error messages based on error type
+            let userMessage = 'Error loading recovered manifest: ' + error.message;
+            if (error.message.includes('HTTPS_REQUIRED')) {
+                userMessage = 'Cannot extract manifest: HTTPS required for security. Please access via HTTPS.';
+            } else if (error.message.includes('BROWSER_INCOMPATIBLE')) {
+                userMessage = 'Cannot extract manifest: Browser not compatible with C2PA features.';
+            } else if (error.message.includes('C2PA_INIT_FAILED')) {
+                userMessage = 'Cannot extract manifest: C2PA initialization failed due to browser restrictions.';
+            }
+
+            this.showAlert(userMessage);
         }
     }
 

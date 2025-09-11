@@ -509,7 +509,7 @@
         import { c2pa_init } from './c2pa-dash-plugin.js';
         import { C2PAPlayer } from './C2paPlayer/main.js';
         import { C2PAManifestDisplay } from './c2pa-manifest-display.js';
-        
+
         // Import manifest recovery functionality
         import './c2pa-manifest-recovery.js';
 
@@ -522,7 +522,7 @@
         // Sample URLs enum
         class SampleUrls {
             static IBC_2025_DEMO = 'https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists/test-itn-signed/c2pa-test.mpd';
-            
+
             static getAll() {
                 return [
                     { url: this.IBC_2025_DEMO, name: 'IBC 2025 Demo Content', description: 'Signed DASH stream with C2PA metadata' }
@@ -537,7 +537,7 @@
             c2paManifestDisplay = new C2PAManifestDisplay('c2paManifestContainer');
             // Make it globally accessible for button callbacks
             window.c2paDisplay = c2paManifestDisplay;
-            
+
             // Close dropdown when clicking outside
             document.addEventListener('click', function(event) {
                 const dropdown = document.getElementById('demoDropdown');
@@ -557,13 +557,13 @@
         window.selectSampleUrl = function(url) {
             const input = document.getElementById('mpdUrl');
             input.value = url;
-            
+
             // Add animation class
             input.classList.add('updated');
             setTimeout(() => {
                 input.classList.remove('updated');
             }, 800);
-            
+
             // Close dropdown
             document.getElementById('demoDropdown').classList.remove('show');
         };
@@ -669,7 +669,7 @@
             if (c2paManifestDisplay) {
                 c2paManifestDisplay.reset();
             }
-            // Relaod the window for C2PA player to load new MPD correctly 
+            // Relaod the window for C2PA player to load new MPD correctly
             location.reload();
         }
 
@@ -709,10 +709,10 @@
                 <p style="margin: 5px 0;"><strong>1. Use HTTP Server (Recommended):</strong></p>
                 <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;">python -m http.server 8000</code>
                 <p style="margin: 5px 0;">Then open: <code>http://localhost:8000</code></p>
-                
+
                 <p style="margin: 10px 0 5px 0;"><strong>2. Use Online DASH Streams:</strong></p>
                 <p style="margin: 5px 0;">Click the sample URLs above to test with remote streams</p>
-                
+
                 <p style="margin: 10px 0 5px 0;"><strong>3. Chrome Dev Mode (Development Only):</strong></p>
                 <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;">chrome --disable-web-security --user-data-dir="/tmp/chrome_dev"</code>
             </div>`;
@@ -944,7 +944,7 @@
                 </svg>
                 Load Content
             </h2>
-            
+
             <div class="input-group">
                 <div class="input-row">
                     <div class="input-field">
@@ -1032,7 +1032,7 @@
                         <input type="file" id="mpdFile" accept=".mpd" style="display: none;" title="Select local MPD file">
                     </div>
                 </div>
-                
+
                 <div class="btn-group">
                     <button class="btn btn-primary" id="loadStreamBtn">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

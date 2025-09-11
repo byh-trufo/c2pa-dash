@@ -16,7 +16,7 @@ async function c2pa_init(player, onPlaybackTimeUpdated) {
 
     //We delay the segment verification by 1 frame to keep into account video quality swtiches,
     //which are notified with 1 frame delay compared to playback
-    let verificationTime = 0.0; 
+    let verificationTime = 0.0;
 
     const c2pa = await createC2pa({
         wasmSrc: 'https://cdn.jsdelivr.net/npm/c2pa@0.18.0-fmp4-alpha.1/dist/assets/wasm/toolkit_bg.wasm',
@@ -43,12 +43,12 @@ async function c2pa_init(player, onPlaybackTimeUpdated) {
                     console.error('[C2PA] initFragment is null for ' + tag);
                 } else {
                     var manifest = await c2pa.readFragment(initFragment[tag], chunk.bytes);
-                    
+
                     if (!(tag in tree))
                         tree[tag] = new IntervalTree();
 
                     const interval = [chunk.start, chunk.end];
-                    const c2paInfo = { 'type': chunk.segmentType, 
+                    const c2paInfo = { 'type': chunk.segmentType,
                         'manifest': manifest,
                         'interval': [chunk.start, chunk.end],
                     };
@@ -128,7 +128,7 @@ async function c2pa_init(player, onPlaybackTimeUpdated) {
                     continue;
                 }
             }
-            
+
             if (segs.length == 0) {
                 console.info('[C2PA] No segment found for media type ' + type);
                 detail['error'] = 'No segment found for media type ' + type;

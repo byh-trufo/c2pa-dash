@@ -8,12 +8,12 @@ class C2PAManifestDisplay {
         this.currentManifestData = null;
         this.isExpanded = false;
         this.isManifestRecovered = false; // Flag to prevent overriding recovered manifests
-        
+
         if (!this.container) {
             console.error(`C2PAManifestDisplay: Container with ID '${containerId}' not found`);
             return;
         }
-        
+
         this.initializeDisplay();
     }
 
@@ -38,7 +38,7 @@ class C2PAManifestDisplay {
                         </button>
                         <button class="c2pa-toggle-btn" onclick="window.c2paDisplay.toggleExpanded()">
                             <span class="toggle-text">Show Details</span>
-                            <svg class="toggle-icon" width="16" height="16" viewBox="0 0 24 24" 
+                            <svg class="toggle-icon" width="16" height="16" viewBox="0 0 24 24"
                                  fill="none" stroke="currentColor" stroke-width="2">
                                 <polyline points="6,9 12,15 18,9"/>
                             </svg>
@@ -60,7 +60,7 @@ class C2PAManifestDisplay {
                         <p class="no-data-message">No manifest data available</p>
                     </div>
                 </div>
-                
+
                 <!-- Scan Overlay -->
                 <div id="c2pa-scan-overlay" style="display: none;">
                     <div class="scan-overlay-content">
@@ -89,7 +89,7 @@ class C2PAManifestDisplay {
                 </div>
             </section>
         `;
-        
+
         this.addStyles();
     }
 
@@ -102,27 +102,27 @@ class C2PAManifestDisplay {
         }
 
         console.log('[C2PA Display] Updating with status:', c2paStatus);
-        
+
         // Check if this is a recovered manifest
         const isRecoveredManifest = c2paStatus.isRecovered === true;
-        
+
         // If we already have a recovered manifest and this is NOT a recovered manifest, ignore the update
         if (this.isManifestRecovered && !isRecoveredManifest) {
             console.log('[C2PA Display] Ignoring update - recovered manifest is already loaded and this is not a recovery');
             return;
         }
-        
+
         // If this is a recovered manifest, set the flag and lock future updates
         if (isRecoveredManifest) {
             console.log('[C2PA Display] Setting recovered manifest flag - future non-recovery updates will be ignored');
             this.isManifestRecovered = true;
         }
-        
+
         this.currentManifestData = c2paStatus;
-        
+
         // Update status indicator
         this.updateStatusIndicator(c2paStatus);
-        
+
         // Update manifest details if expanded
         if (this.isExpanded) {
             this.updateManifestDetails(c2paStatus);
@@ -135,33 +135,33 @@ class C2PAManifestDisplay {
     updateStatusIndicator(status) {
         const statusIndicator = this.container.querySelector('.status-indicator');
         const statusText = this.container.querySelector('.status-text');
-        
+
         if (!statusIndicator || !statusText) return;
 
         // Reset classes
         statusIndicator.className = 'status-indicator';
-        
+
         // Check if there are errors indicating no manifest
-        const hasManifestErrors = status.details && Object.values(status.details).some(detail => 
+        const hasManifestErrors = status.details && Object.values(status.details).some(detail =>
             detail.error && (
-                detail.error.includes('null manifestStore') || 
-                detail.error.includes('No segment found') || 
+                detail.error.includes('null manifestStore') ||
+                detail.error.includes('No segment found') ||
                 detail.error.includes('no validation status available')
             )
         );
-        
+
         if (status.verified === true) {
             if (status.isRecovered) {
                 statusIndicator.classList.add('recovered');
                 statusIndicator.innerHTML = `
-                    <svg width="16" height="16" viewBox="0 0 24 24" 
+                    <svg width="16" height="16" viewBox="0 0 24 24"
                          fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M9 12l2 2 4-4"/>
                         <circle cx="12" cy="12" r="10"/>
                         <circle cx="18" cy="6" r="3" fill="currentColor"/>
                     </svg>
                 `;
-                
+
                 // Extract VT hash from manifest if available
                 let vtHash = '';
                 if (status.details && status.details.video && status.details.video.manifest) {
@@ -171,12 +171,12 @@ class C2PAManifestDisplay {
                         vtHash = hashAssertion.data.hash;
                     }
                 }
-                
+
                 statusText.innerHTML = `Manifest recovered. <span class="recovery-indicator">📡 Manifest recovered via VT hash${vtHash ? ' ' + vtHash : ''}</span>`;
             } else {
                 statusIndicator.classList.add('verified');
                 statusIndicator.innerHTML = `
-                    <svg width="16" height="16" viewBox="0 0 24 24" 
+                    <svg width="16" height="16" viewBox="0 0 24 24"
                          fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M9 12l2 2 4-4"/>
                         <circle cx="12" cy="12" r="10"/>
@@ -187,7 +187,7 @@ class C2PAManifestDisplay {
         } else if (status.verified === false) {
             statusIndicator.classList.add('failed');
             statusIndicator.innerHTML = `
-                <svg width="16" height="16" viewBox="0 0 24 24" 
+                <svg width="16" height="16" viewBox="0 0 24 24"
                      fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="10"/>
                     <line x1="15" y1="9" x2="9" y2="15"/>
@@ -198,7 +198,7 @@ class C2PAManifestDisplay {
         } else if (hasManifestErrors) {
             statusIndicator.classList.add('not-found');
             statusIndicator.innerHTML = `
-                <svg width="16" height="16" viewBox="0 0 24 24" 
+                <svg width="16" height="16" viewBox="0 0 24 24"
                      fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="10"/>
                     <path d="M12 8v4"/>
@@ -209,7 +209,7 @@ class C2PAManifestDisplay {
         } else {
             statusIndicator.classList.add('pending');
             statusIndicator.innerHTML = `
-                <svg width="16" height="16" viewBox="0 0 24 24" 
+                <svg width="16" height="16" viewBox="0 0 24 24"
                      fill="none" stroke="currentColor" stroke-width="2" class="animate-spin">
                     <path d="M21 12a9 9 0 11-6.219-8.56"/>
                 </svg>
@@ -226,21 +226,21 @@ class C2PAManifestDisplay {
         if (!manifestContent) return;
 
         let html = '<div class="manifest-summary">';
-        
+
         // Add manifest summary section first
         html += this.generateManifestSummarySection(status);
-        
+
         // C2PA Manifest Chain section with toggle
         html += this.generateManifestChainSection(status);
 
         // Details for each media type
         if (status.details && Object.keys(status.details).length > 0) {
             html += '<div class="manifest-section"><h4>Media Type Details</h4>';
-            
+
             for (const [mediaType, detail] of Object.entries(status.details)) {
                 html += this.generateMediaTypeSection(mediaType, detail);
             }
-            
+
             html += '</div>';
         }
 
@@ -289,17 +289,17 @@ class C2PAManifestDisplay {
             // Get the first manifest (there should be only one active manifest)
             const manifestKeys = Object.keys(manifestData.manifests);
             console.log('[C2PA Display] Manifest keys:', manifestKeys);
-            
+
             if (manifestKeys.length > 0) {
                 const activeManifest = manifestData.manifests[manifestKeys[0]];
                 console.log('[C2PA Display] Active manifest:', activeManifest);
-                
+
                 // Extract issuer from signatureInfo.issuer
                 if (activeManifest.signatureInfo && activeManifest.signatureInfo.issuer) {
                     issuedBy = activeManifest.signatureInfo.issuer;
                     console.log('[C2PA Display] Found issuer:', issuedBy);
                 }
-                
+
                 // Extract app/device from claimGenerator
                 if (activeManifest.claimGenerator) {
                     appOrDevice = activeManifest.claimGenerator;
@@ -308,19 +308,19 @@ class C2PAManifestDisplay {
             }
         } else if (manifestData.manifestStore) {
             console.log('[C2PA Display] Using manifestStore structure');
-            
+
             // Check if the data is in manifestStore.activeManifest (the actual structure we're seeing)
             if (manifestData.manifestStore.activeManifest) {
                 console.log('[C2PA Display] Found activeManifest in manifestStore');
                 const activeManifest = manifestData.manifestStore.activeManifest;
                 console.log('[C2PA Display] Active manifest from manifestStore:', activeManifest);
-                
+
                 // Extract issuer from signatureInfo.issuer
                 if (activeManifest.signatureInfo && activeManifest.signatureInfo.issuer) {
                     issuedBy = activeManifest.signatureInfo.issuer;
                     console.log('[C2PA Display] Found issuer in manifestStore:', issuedBy);
                 }
-                
+
                 // Extract app/device from claimGenerator
                 if (activeManifest.claimGenerator) {
                     appOrDevice = activeManifest.claimGenerator;
@@ -330,7 +330,7 @@ class C2PAManifestDisplay {
                 console.log('[C2PA Display] Using old manifestStore structure');
                 // Fallback to old manifest structure for backwards compatibility
                 const manifestStore = manifestData.manifestStore;
-                
+
                 // Look for issuer information in claims
                 if (manifestStore.claims && manifestStore.claims.length > 0) {
                     for (const claim of manifestStore.claims) {
@@ -380,7 +380,7 @@ class C2PAManifestDisplay {
         if (status.isRecovered) {
             // Extract VT hash if available
             let vtHashInfo = '';
-            
+
             // Check in new manifest structure
             if (manifestData.manifests) {
                 const manifestKeys = Object.keys(manifestData.manifests);
@@ -396,7 +396,7 @@ class C2PAManifestDisplay {
                     }
                 }
             }
-            
+
             // Check old structure for recovery info
             if (manifestData.manifestStore && manifestData.manifestStore.assertions) {
                 for (const assertion of manifestData.manifestStore.assertions) {
@@ -411,7 +411,7 @@ class C2PAManifestDisplay {
                     }
                 }
             }
-            
+
             if (vtHashInfo) {
                 appOrDevice = `${appOrDevice}${vtHashInfo}`;
             }
@@ -423,7 +423,7 @@ class C2PAManifestDisplay {
                 <div class="summary-grid">
                     <div class="summary-item">
                         <div class="summary-label">
-                            <svg width="16" height="16" viewBox="0 0 24 24" 
+                            <svg width="16" height="16" viewBox="0 0 24 24"
                                  fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                                 <circle cx="12" cy="7" r="4"/>
@@ -432,10 +432,10 @@ class C2PAManifestDisplay {
                         </div>
                         <div class="summary-value">${this.escapeHtml(issuedBy)}</div>
                     </div>
-                    
+
                     <div class="summary-item">
                         <div class="summary-label">
-                            <svg width="16" height="16" viewBox="0 0 24 24" 
+                            <svg width="16" height="16" viewBox="0 0 24 24"
                                  fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/>
                                 <line x1="7" y1="2" x2="7" y2="22"/>
@@ -451,10 +451,10 @@ class C2PAManifestDisplay {
                         <div class="summary-value">${this.escapeHtml(appOrDevice)}</div>
                     </div>
                 </div>
-                
+
                 ${status.isRecovered ? `
                     <div class="recovery-notice">
-                        <svg width="16" height="16" viewBox="0 0 24 24" 
+                        <svg width="16" height="16" viewBox="0 0 24 24"
                              fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="3"/>
                             <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/>
@@ -475,7 +475,7 @@ class C2PAManifestDisplay {
         // Find video manifest for chain analysis (prioritize video over audio as requested)
         let chainManifest = null;
         let manifestCount = 0;
-        
+
         if (status.details) {
             // Prioritize video manifest
             if (status.details.video && status.details.video.manifest) {
@@ -488,12 +488,12 @@ class C2PAManifestDisplay {
         // Count manifests - for now we'll show 1 if we have a manifest, 0 if not
         // In a real implementation, you'd count actual chain manifests
         manifestCount = chainManifest ? 1 : 0;
-        
+
         // Extract assertions if available
         let assertions = [];
         if (chainManifest && chainManifest.manifestStore) {
             const manifestStore = chainManifest.manifestStore;
-            
+
             // Look for assertions in various places
             if (manifestStore.assertions) {
                 assertions = manifestStore.assertions;
@@ -510,10 +510,10 @@ class C2PAManifestDisplay {
         let html = `<div class="manifest-section">
             <div class="manifest-chain-header">
                 <h4>C2PA Manifest Chain</h4>
-                <button class="manifest-chain-toggle-btn" 
+                <button class="manifest-chain-toggle-btn"
                         onclick="window.c2paDisplay.toggleManifestChain()">
                     <span class="chain-toggle-text">Show Details</span>
-                    <svg class="chain-toggle-icon" width="12" height="12" viewBox="0 0 24 24" 
+                    <svg class="chain-toggle-icon" width="12" height="12" viewBox="0 0 24 24"
                          fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="6,9 12,15 18,9"/>
                     </svg>
@@ -525,11 +525,11 @@ class C2PAManifestDisplay {
                 </span>
             </div>
             <div class="manifest-chain-details" style="display: none;">`;
-        
+
         if (manifestCount > 0 && assertions.length > 0) {
             html += `<div class="assertions-list">
                 <h5>Video Stream Assertions</h5>`;
-            
+
             assertions.forEach((assertion, index) => {
                 html += `<div class="assertion-item">
                     <div class="assertion-header">
@@ -538,10 +538,10 @@ class C2PAManifestDisplay {
                             ${assertion.label || assertion.kind || 'Unknown Assertion'}
                         </span>
                     </div>`;
-                
+
                 if (assertion.data) {
                     html += `<div class="assertion-details">`;
-                    
+
                     // Display assertion details based on available data
                     if (typeof assertion.data === 'object') {
                         for (const [key, value] of Object.entries(assertion.data)) {
@@ -549,8 +549,8 @@ class C2PAManifestDisplay {
                                 html += `<div class="assertion-property">
                                     <span class="property-name">${key}:</span>
                                     <span class="property-value">${
-                                        typeof value === 'object' 
-                                            ? this.safeJSONStringify(value, null, 2) 
+                                        typeof value === 'object'
+                                            ? this.safeJSONStringify(value, null, 2)
                                             : value
                                     }</span>
                                 </div>`;
@@ -561,13 +561,13 @@ class C2PAManifestDisplay {
                             <span class="property-value">${assertion.data}</span>
                         </div>`;
                     }
-                    
+
                     html += `</div>`;
                 }
-                
+
                 html += `</div>`;
             });
-            
+
             html += `</div>`;
         } else if (manifestCount > 0) {
             html += `<div class="no-assertions">
@@ -578,9 +578,9 @@ class C2PAManifestDisplay {
                 <p>No manifest chain data available.</p>
             </div>`;
         }
-        
+
         html += `</div></div>`;
-        
+
         return html;
     }
 
@@ -615,13 +615,13 @@ class C2PAManifestDisplay {
         // Manifest information
         if (detail.manifest && detail.manifest.manifestStore) {
             const manifest = detail.manifest.manifestStore;
-            
+
             // Validation status
             if (manifest.validationStatus && manifest.validationStatus.length > 0) {
                 html += `<div class="detail-item">
                     <span class="detail-label">Validation Issues:</span>
                     <div class="validation-issues">`;
-                
+
                 manifest.validationStatus.forEach(issue => {
                     html += `<div class="validation-issue">
                         <strong>Code:</strong> ${issue.code || 'Unknown'}<br>
@@ -630,7 +630,7 @@ class C2PAManifestDisplay {
                         }
                     </div>`;
                 });
-                
+
                 html += `</div></div>`;
             }
 
@@ -661,27 +661,27 @@ class C2PAManifestDisplay {
                 html += `<div class="detail-item">
                     <span class="detail-label">Claims:</span>
                     <div class="claims-list">`;
-                
+
                 manifest.claims.forEach((claim, index) => {
                     html += `<div class="claim-item">
                         <strong>Claim ${index + 1}:</strong><br>
                         <div class="claim-details">`;
-                    
+
                     if (claim.label) {
                         html += `<div><strong>Label:</strong> ${claim.label}</div>`;
                     }
-                    
+
                     if (claim.signature) {
                         html += `<div><strong>Signature Info:</strong> ${
-                            typeof claim.signature === 'string' 
-                                ? claim.signature 
+                            typeof claim.signature === 'string'
+                                ? claim.signature
                                 : 'Present'
                         }</div>`;
                     }
-                    
+
                     html += `</div></div>`;
                 });
-                
+
                 html += `</div></div>`;
             }
 
@@ -689,7 +689,7 @@ class C2PAManifestDisplay {
             html += `<div class="detail-item">
                 <span class="detail-label">Raw Manifest:</span>
                 <div class="detail-value">
-                    <button class="toggle-raw-btn" 
+                    <button class="toggle-raw-btn"
                             onclick="window.c2paDisplay.toggleRawManifest('${mediaType}')">
                         Show Raw Data
                     </button>
@@ -721,7 +721,7 @@ ${this.safeJSONStringify(manifest, null, 2)}</pre>
         const detailsDiv = this.container.querySelector('.c2pa-details');
         const toggleText = this.container.querySelector('.toggle-text');
         const toggleBtn = this.container.querySelector('.c2pa-toggle-btn');
-        
+
         if (detailsDiv && toggleText && toggleBtn) {
             if (this.isExpanded) {
                 detailsDiv.style.display = 'block';
@@ -743,11 +743,11 @@ ${this.safeJSONStringify(manifest, null, 2)}</pre>
      */
     async scanManifestRecovery() {
         console.log('[C2PA Display] Scanning for manifest recovery information...');
-        
+
         // Get the current MPD URL from the input field
         const mpdUrlInput = document.getElementById('mpdUrl');
         const mpdUrl = mpdUrlInput ? mpdUrlInput.value.trim() : '';
-        
+
         // Use the new manifest recovery UI service
         if (window.manifestRecoveryUI) {
             await window.manifestRecoveryUI.startScan(mpdUrl);
@@ -771,7 +771,7 @@ ${this.safeJSONStringify(manifest, null, 2)}</pre>
     toggleRawManifest(mediaType) {
         const rawElement = document.getElementById(`raw-${mediaType}`);
         const buttonElement = event.target;
-        
+
         if (rawElement) {
             if (rawElement.style.display === 'none') {
                 rawElement.style.display = 'block';
@@ -881,7 +881,7 @@ ${this.safeJSONStringify(manifest, null, 2)}</pre>
                                                 softwareAgent: "IBC Content Creator v1.0"
                                             },
                                             {
-                                                action: "c2pa.edited", 
+                                                action: "c2pa.edited",
                                                 when: "2025-01-15T14:45:00Z",
                                                 softwareAgent: "Video Editor Pro v2.1"
                                             }
@@ -899,7 +899,7 @@ ${this.safeJSONStringify(manifest, null, 2)}</pre>
                                 },
                                 {
                                     label: "c2pa.thumbnail",
-                                    kind: "c2pa.thumbnail.claim.jpeg.v1", 
+                                    kind: "c2pa.thumbnail.claim.jpeg.v1",
                                     data: {
                                         format: "image/jpeg",
                                         identifier: "jumbf://self#content-thumbnail"
@@ -945,9 +945,9 @@ ${this.safeJSONStringify(manifest, null, 2)}</pre>
                 }
             }
         };
-        
+
         this.updateDisplay(mockData);
-        
+
         // Auto-expand for demo
         if (!this.isExpanded) {
             this.toggleExpanded();
@@ -1889,7 +1889,7 @@ ${this.safeJSONStringify(manifest, null, 2)}</pre>
                 }
             }
         `;
-        
+
         document.head.appendChild(styleSheet);
     }
 }
