@@ -205,6 +205,115 @@ z-index: 100;
   .vjs-workinghover .vjs-menu-button-popup:hover .vjs-menu {
     display: none;
   }
+
+  /* Scan Overlay Styles */
+  #c2pa-scan-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  #c2pa-scan-overlay.show {
+    opacity: 1;
+  }
+
+  .scan-overlay-content {
+    background: white;
+    border-radius: 8px;
+    padding: 30px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .scan-loading h3, .scan-results h3 {
+    margin: 20px 0 10px 0;
+    color: #333;
+  }
+
+  .scan-loading p, .scan-results p {
+    margin: 10px 0;
+    color: #666;
+  }
+
+  .scan-spinner {
+    animation: spin 1s linear infinite;
+    color: #007BFF;
+    margin-bottom: 20px;
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .scan-results.success .result-icon {
+    color: #28a745;
+    margin-bottom: 20px;
+  }
+
+  .scan-results.error .result-icon {
+    color: #dc3545;
+    margin-bottom: 20px;
+  }
+
+  .recovery-badge {
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 8px 16px;
+    border-radius: 20px;
+    display: inline-block;
+    margin: 10px 0;
+    font-weight: 500;
+  }
+
+  .hash-display, .similarity-display {
+    margin: 10px 0;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 4px;
+  }
+
+  .hash-label, .similarity-label {
+    font-weight: 600;
+    color: #495057;
+  }
+
+  .hash-value, .similarity-value {
+    color: #007BFF;
+    font-family: monospace;
+    margin-left: 8px;
+  }
+
+  .scan-close-btn {
+    background: #007BFF;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.2s;
+  }
+
+  .scan-close-btn:hover {
+    background: #0056b3;
+  }
+
+  .error-message {
+    color: #dc3545;
+    font-weight: 500;
+  }
   /***FRICTION OVERLAY***/
 .friction-overlay {
     position: absolute;

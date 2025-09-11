@@ -961,33 +961,72 @@
                             </svg>
                         </button>
                         <div class="dropdown-content" id="demoDropdown">
-                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists/rte/test-rte-migrant-signed/c2pa-test.mpd')">
-                                RTE Migrants Signed
-                                <div style="font-size: 0.75rem; color: var(--neutral-500); margin-top: 0.25rem;">Test RTE migrant content with C2PA signatures</div>
+                            <!-- BBC About C2PA - Signed -->
+                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_hashed/bbc_demo_edit_unsigned-hashed_vt(240262)-signed/c2pa-test.mpd')">
+                                BBC About C2PA - Signed
                             </div>
-                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists/bbc/test-bbc-about-cr-edit-signed/c2pa-test.mpd')">
-                                BBC Demo Signed
-                                <div style="font-size: 0.75rem; color: var(--neutral-500); margin-top: 0.25rem;">BBC demo content with C2PA signatures</div>
-                            </div>
-                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists/bbc/test-bbc-about-cr-edit-tampered/c2pa-test.mpd')">
-                                BBC Demo Tampered
-                                <div style="font-size: 0.75rem; color: var(--neutral-500); margin-top: 0.25rem;">BBC demo content that has been tampered with</div>
-                            </div>
-                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists/rte/test-rte-migrant-tampered/c2pa-test.mpd')">
-                                RTE Migrants Tampered
-                                <div style="font-size: 0.75rem; color: var(--neutral-500); margin-top: 0.25rem;">RTE migrant content that has been tampered with</div>
-                            </div>
-                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_stripped/rte/RTÉ_not_signed_news_ Migrants-hashed_vt(240259)/c2pa-test.mpd')">
-                                RTE Migrants Stripped
-                                <div style="font-size: 0.75rem; color: var(--neutral-500); margin-top: 0.25rem;">VT-hashed content without C2PA signatures</div>
-                            </div>
+                            <!-- BBC About C2PA - Stripped -->
                             <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_stripped/bbc/bbc_demo_edit_unsigned-hashed_vt(240262)/c2pa-test.mpd')">
-                                BBC Demo Stripped
-                                <div style="font-size: 0.75rem; color: var(--neutral-500); margin-top: 0.25rem;">VT-hashed content without C2PA signatures</div>
+                                BBC About C2PA - Stripped
+                            </div>
+                            <!-- BBC About C2PA - Tampered -->
+                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_plylist_tampered/bbc_demo_edit_unsigned-hashed_vt(240262)-signed/c2pa-test.mpd')">
+                                BBC About C2PA - Tampered
+                            </div>
+                            <!-- BBC Live UGC - Signed -->
+                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_hashed/bbc-live-ugc-hashed_vt(240254)-signed/c2pa-test.mpd')">
+                                BBC Live UGC - Signed
+                            </div>
+                            <!-- BBC Live UGC - Stripped -->
+                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_stripped/bbc/bbc-live-ugc-hashed_vt(240254)/c2pa-test.mpd')">
+                                BBC Live UGC - Stripped
+                            </div>
+                            <!-- BBC Live UGC - Tampered -->
+                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_plylist_tampered/bbc-live-ugc-hashed_vt(240254)-signed/c2pa-test.mpd')">
+                                BBC Live UGC - Tampered
+                            </div>
+                            <!-- RTE Carey - Signed -->
+                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_hashed/RT%C3%89_not_signed_news_%20Carey-hashed_vt(240261)-signed/c2pa-test.mpd')">
+                                RTE Carey - Signed
+                            </div>
+                            <!-- RTE Carey - Stripped -->
+                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_stripped/rte/RT%C3%89_not_signed_news_%20Carey-hashed_vt(240261)/c2pa-test.mpd')">
+                                RTE Carey - Stripped
+                            </div>
+                            <!-- RTE Carey - Tampered -->
+                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_plylist_tampered/RT%C3%89_not_signed_news_%20Carey-hashed_vt(240261)-signed/c2pa-test.mpd')">
+                                RTE Carey - Tampered
+                            </div>
+                            <!-- RTE Migrants - Signed -->
+                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_hashed/RT%C3%89_not_signed_news_%20Migrants-hashed_vt(240259)-signed/c2pa-test.mpd')">
+                                RTE Migrants - Signed
+                            </div>
+                            <!-- RTE Migrants - Stripped -->
+                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_stripped/rte/RT%C3%89_not_signed_news_%20Migrants-hashed_vt(240259)/c2pa-test.mpd')">
+                                RTE Migrants - Stripped
+                            </div>
+                            <!-- RTE Migrants - Tampered -->
+                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_plylist_tampered/RT%C3%89_not_signed_news_%20Migrants-hashed_vt(240259)-signed/c2pa-test.mpd')">
+                                RTE Migrants - Tampered
+                            </div>
+                            <!-- RTE News - Signed -->
+                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_hashed/RTE_News-hashed_vt(240257)-signed/c2pa-test.mpd')">
+                                RTE News - Signed
+                            </div>
+                            <!-- RTE News - Stripped -->
+                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_stripped/rte/RTE_News-hashed_vt(240257)/c2pa-test.mpd')">
+                                RTE News - Stripped
+                            </div>
+                            <!-- RTE News - Tampered -->
+                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_plylist_tampered/RTE_News-hashed_vt(240257)-signed/c2pa-test.mpd')">
+                                RTE News - Tampered
+                            </div>
+                            <!-- Failure Example - Sony BMFF (no VT ID) -->
+                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa01/target_palylists/sony-bmff3-3/c2pa-test.mpd')">
+                                Sony BMFF - Unsigned
                             </div>
                             <div class="dropdown-item file-option" onclick="document.getElementById('mpdFile').click()">
                                 Browse Local Files
-                                <div style="font-size: 0.75rem; color: var(--neutral-500); margin-top: 0.25rem;">Select MPD file from your device</div>
                             </div>
                         </div>
                         <input type="file" id="mpdFile" accept=".mpd" style="display: none;" title="Select local MPD file">

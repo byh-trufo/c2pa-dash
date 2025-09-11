@@ -114,28 +114,44 @@ class ManifestRecoveryService {
     getFallbackVTHash(mpdUrl) {
         console.log('[Manifest Recovery] Checking fallback for URL:', mpdUrl);
         
-        // Hardcoded DB.
+        // Hardcoded DB based on VT IDs extracted from URLs
         const fallbackMap = {
-            'rte_migrants_stripped': {
+            '240257': {
+                hashId: '240257',
+                similarity: 95.2,
+                signedUrl: 'https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_hashed/RTE_News-hashed_vt(240257)-signed/c2pa-test.mpd'
+            },
+            '240261': {
+                hashId: '240261',
+                similarity: 96.8,
+                signedUrl: 'https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_hashed/RT%C3%89_not_signed_news_%20Carey-hashed_vt(240261)-signed/c2pa-test.mpd'
+            },
+            '240259': {
                 hashId: '240259',
                 similarity: 95.2,
-                signedUrl: 'https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists/rte/test-rte-migrant-signed/c2pa-test.mpd'
+                signedUrl: 'https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_hashed/RT%C3%89_not_signed_news_%20Migrants-hashed_vt(240259)-signed/c2pa-test.mpd'
             },
-            'bbc_demo_stripped': {
+            '240254': {
+                hashId: '240254',
+                similarity: 97.1,
+                signedUrl: 'https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_hashed/bbc-live-ugc-hashed_vt(240254)-signed/c2pa-test.mpd'
+            },
+            '240262': {
                 hashId: '240262', 
                 similarity: 97.8,
-                signedUrl: 'https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists/bbc/test-bbc-about-cr-edit-signed/c2pa-test.mpd'
+                signedUrl: 'https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_hashed/bbc_demo_edit_unsigned-hashed_vt(240262)-signed/c2pa-test.mpd'
             }
         };
 
-        // Check which content this URL matches - be more flexible with matching
-        for (const [key, data] of Object.entries(fallbackMap)) {
-            console.log('[Manifest Recovery] Checking if URL contains:', key);
-            if (mpdUrl.includes(key) || 
-                mpdUrl.includes(key.replace('_stripped', '')) || 
-                (key.includes('rte_migrants') && (mpdUrl.includes('rte') || mpdUrl.includes('migrants'))) ||
-                (key.includes('bbc_demo') && (mpdUrl.includes('bbc') || mpdUrl.includes('demo')))) {
-                console.warn(`[Manifest Recovery] Using hardcoded VT hash ${data.hashId} for ${key}`);
+        // Extract VT ID from URL using regex pattern vt(XXXXXX)
+        const vtIdMatch = mpdUrl.match(/vt\((\d+)\)/);
+        if (vtIdMatch) {
+            const vtId = vtIdMatch[1];
+            console.log('[Manifest Recovery] Extracted VT ID from URL:', vtId);
+            
+            if (fallbackMap[vtId]) {
+                const data = fallbackMap[vtId];
+                console.warn(`[Manifest Recovery] Using hardcoded VT hash ${data.hashId} for VT ID ${vtId}`);
                 return {
                     success: true,
                     hashId: data.hashId,
@@ -143,7 +159,11 @@ class ManifestRecoveryService {
                     isRecovered: true,
                     signedUrl: data.signedUrl
                 };
+            } else {
+                console.log('[Manifest Recovery] VT ID found but no mapping available:', vtId);
             }
+        } else {
+            console.log('[Manifest Recovery] No VT ID pattern found in URL');
         }
 
         console.log('[Manifest Recovery] No fallback match found for URL:', mpdUrl);
@@ -301,6 +321,9 @@ class ManifestRecoveryUI {
         // Show loading overlay
         this.showLoadingOverlay();
         
+        // Add a small delay to ensure loading overlay is visible before showing results
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         try {
             // Perform the scan
             console.log('[Manifest Recovery UI] Calling service.scanForManifestRecovery...');
@@ -314,12 +337,13 @@ class ManifestRecoveryUI {
             console.log('[Manifest Recovery UI] Calling showResults...');
             this.showResults(results);
             
-            // If using backup VT hash, auto-close and load manifest
+            // If using backup VT hash, show notification for 1 second, then load manifest
             if (results.success && results.isRecovered) {
-                console.log('[Manifest Recovery UI] Auto-loading manifest in 1 second...');
+                console.log('[Manifest Recovery UI] Showing recovery notification for 1 second...');
                 setTimeout(() => {
+                    console.log('[Manifest Recovery UI] Auto-loading manifest now...');
                     this.loadRecoveredManifest();
-                }, 1000);
+                }, 1000); // Show notification for 1 second
             }
             
         } catch (error) {
@@ -369,37 +393,42 @@ class ManifestRecoveryUI {
     showResults(results) {
         console.log('[Manifest Recovery UI] showResults called with:', results);
         
-        const overlay = document.getElementById(this.overlayId);
-        if (!overlay) {
-            console.error('[Manifest Recovery UI] Overlay not found!');
-            return;
-        }
-        
-        const content = overlay.querySelector('.scan-overlay-content');
-        if (!content) {
-            console.error('[Manifest Recovery UI] Overlay content not found!');
-            return;
-        }
-        
-        console.log('[Manifest Recovery UI] Updating overlay content...');
-        
-        if (results.success) {
-            if (results.isRecovered) {
-                // Show success message for backup VT hash
-                content.innerHTML = `
-                    <div class="scan-results success">
-                        <svg width="64" height="64" viewBox="0 0 24 24" 
-                             fill="none" stroke="currentColor" stroke-width="2" class="result-icon">
-                            <path d="M9 12l2 2 4-4"/>
-                            <circle cx="12" cy="12" r="10"/>
-                        </svg>
-                        <h3>VT Hash Recovered!</h3>
-                        <div class="recovery-badge">📡 Found VT Hash ${results.hashId}</div>
-                        <p>Retrieving C2PA Manifest...</p>
-                    </div>
-                `;
-                console.log('[Manifest Recovery UI] Showing recovery success message');
-            } else {
+        try {
+            const overlay = document.getElementById(this.overlayId);
+            console.log('[Manifest Recovery UI] Overlay element:', overlay);
+            if (!overlay) {
+                console.error('[Manifest Recovery UI] Overlay not found!');
+                return;
+            }
+            
+            const content = overlay.querySelector('.scan-overlay-content');
+            console.log('[Manifest Recovery UI] Content element:', content);
+            if (!content) {
+                console.error('[Manifest Recovery UI] Overlay content not found!');
+                return;
+            }
+            
+            console.log('[Manifest Recovery UI] Updating overlay content...');
+            
+            if (results.success) {
+                console.log('[Manifest Recovery UI] Results indicate success, isRecovered:', results.isRecovered);
+                if (results.isRecovered) {
+                    console.log('[Manifest Recovery UI] Showing recovery success message...');
+                    // Show success message for backup VT hash
+                    content.innerHTML = `
+                        <div class="scan-results success">
+                            <svg width="64" height="64" viewBox="0 0 24 24" 
+                                 fill="none" stroke="currentColor" stroke-width="2" class="result-icon">
+                                <path d="M9 12l2 2 4-4"/>
+                                <circle cx="12" cy="12" r="10"/>
+                            </svg>
+                            <h3>VT Hash Recovered!</h3>
+                            <div class="recovery-badge">📡 Found VT Hash ${results.hashId}</div>
+                            <p>Retrieving C2PA Manifest...</p>
+                        </div>
+                    `;
+                    console.log('[Manifest Recovery UI] Recovery success message set successfully');
+                } else {
                 // Show normal VT hash result
                 content.innerHTML = `
                     <div class="scan-results success">
@@ -433,7 +462,7 @@ class ManifestRecoveryUI {
                         <line x1="15" y1="9" x2="9" y2="15"/>
                         <line x1="9" y1="9" x2="15" y2="15"/>
                     </svg>
-                    <h3>Scanning for Manifest Recovery</h3>
+                    <h3>No Manifest Found</h3>
                     <p class="error-message">${results.error}</p>
                     <button class="scan-close-btn" onclick="window.manifestRecoveryUI.hideOverlay()">
                         Close
@@ -441,6 +470,16 @@ class ManifestRecoveryUI {
                 </div>
             `;
             console.log('[Manifest Recovery UI] Showing error result');
+            
+            // Auto-close error overlay after 3 seconds
+            setTimeout(() => {
+                console.log('[Manifest Recovery UI] Auto-closing error overlay...');
+                this.hideOverlay();
+            }, 3000);
+        }
+        
+        } catch (error) {
+            console.error('[Manifest Recovery UI] Error in showResults:', error);
         }
     }
 
