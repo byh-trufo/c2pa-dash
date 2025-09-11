@@ -271,8 +271,12 @@
             display: block;
         }
 
+        #demoDropdown {
+            padding: 0.25rem 0rem;
+        }
+
         .dropdown-item {
-            padding: 0.75rem 1rem;
+            padding: 0.25rem 1rem;
             cursor: pointer;
             border-bottom: 1px solid var(--neutral-100);
             font-size: 0.875rem;
@@ -1020,10 +1024,6 @@
                             <!-- RTE News - Tampered -->
                             <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa-01/target_plylist_tampered/RTE_News-hashed_vt(240257)-signed/c2pa-test.mpd')">
                                 RTE News - Tampered
-                            </div>
-                            <!-- Failure Example - Sony BMFF (no VT ID) -->
-                            <div class="dropdown-item" onclick="window.selectSampleUrl('https://storage.googleapis.com/ibc2025-c2pa01/target_palylists/sony-bmff3-3/c2pa-test.mpd')">
-                                Sony BMFF - Unsigned
                             </div>
                             <div class="dropdown-item file-option" onclick="document.getElementById('mpdFile').click()">
                                 Browse Local Files

@@ -17,26 +17,25 @@ class ManifestRecoveryService {
             throw new Error('Please load a valid MPD URL first.');
         }
 
-        // TODO: Temporarily bypassing VSE query for testing
-        console.warn('[Manifest Recovery] VSE query temporarily disabled, using hardcoded fallback');
-        const fallbackResult = this.getFallbackVTHash(mpdUrl);
-        if (fallbackResult) {
-            return fallbackResult;
-        }
-
-        /* TODO: Re-enable when VSE server is properly configured for CORS
         try {
-            const config = {"hashAlgorithms": [{"algorithm": "vt"}]};
+            const config = {"algorithms": ["vt"]};
             
             // Create FormData correctly
             const formData = new FormData();
             formData.append('playlist_url', mpdUrl);
             formData.append('config', JSON.stringify(config));
             
+            // Create AbortController for 60-second timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 60000);
+            
             const response = await fetch(`${this.apiUrl}/api/v1/query/hashes/by-mpd-playlist`, {
                 method: 'POST',
-                body: formData
+                body: formData,
+                signal: controller.signal
             });
+            
+            clearTimeout(timeoutId);
             
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -45,12 +44,29 @@ class ManifestRecoveryService {
             const result = await response.json();
             
             if (result.status === 'success' && result.data && result.data.length > 0) {
-                const hashData = result.data[0];
-                return {
-                    success: true,
-                    hashId: hashData.hash,
-                    similarity: hashData.similarity
-                };
+                // Find the entry with highest similarity
+                const bestMatch = result.data.reduce((best, current) => 
+                    current.similarity > best.similarity ? current : best
+                );
+                
+                // Map hash ID to signed manifest URL
+                const signedUrl = this.getManifestUrlFromHashId(bestMatch.hash);
+                
+                if (signedUrl) {
+                    return {
+                        success: true,
+                        hashId: bestMatch.hash,
+                        similarity: bestMatch.similarity,
+                        isRecovered: true,
+                        signedUrl: signedUrl
+                    };
+                } else {
+                    console.warn(`[Manifest Recovery] VSE found hash ${bestMatch.hash} but no manifest URL mapping available`);
+                    return {
+                        success: false,
+                        error: `VT hash ${bestMatch.hash} found but no corresponding signed manifest available`
+                    };
+                }
             } else {
                 return {
                     success: false,
@@ -80,13 +96,23 @@ class ManifestRecoveryService {
                 error: error.message || 'Failed to connect to manifest recovery service'
             };
         }
-        */
+    }
 
-        // If no fallback match found
-        return {
-            success: false,
-            error: 'No VT hash available for this content'
+    /**
+     * Map VT hash ID to signed manifest URL
+     * @param {string} hashId - The VT hash ID
+     * @returns {string|null} - The signed manifest URL or null if not found
+     */
+    getManifestUrlFromHashId(hashId) {
+        const hashIdToUrlMap = {
+            '240257': 'https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_hashed/RTE_News-hashed_vt(240257)-signed/c2pa-test.mpd',
+            '240261': 'https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_hashed/RT%C3%89_not_signed_news_%20Carey-hashed_vt(240261)-signed/c2pa-test.mpd',
+            '240259': 'https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_hashed/RT%C3%89_not_signed_news_%20Migrants-hashed_vt(240259)-signed/c2pa-test.mpd',
+            '240254': 'https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_hashed/bbc-live-ugc-hashed_vt(240254)-signed/c2pa-test.mpd',
+            '240262': 'https://storage.googleapis.com/ibc2025-c2pa-01/target_playlists_hashed/bbc_demo_edit_unsigned-hashed_vt(240262)-signed/c2pa-test.mpd'
         };
+        
+        return hashIdToUrlMap[hashId] || null;
     }
 
     /**

@@ -128,13 +128,22 @@ let createTimelineSegment = function (
     const lastSegment = progressSegments[numSegments - 1];
     lastSegment.dataset.endTime = currentTime;
 
-    //Update the color of the progress bar tooltip to match with the that of the last segment
+    //Update the color of the progress bar tooltip to match with that of the last segment
     const playProgressControl = videoPlayer
       .el()
       .querySelector('.vjs-play-progress');
-    playProgressControl.style.backgroundColor =
-      lastSegment.style.backgroundColor;
-    playProgressControl.style.color = lastSegment.style.backgroundColor;
+    
+    // Check if the manifest is recovered and override with orange color
+    const videoPlayerElement = videoPlayer.el();
+    if (videoPlayerElement && videoPlayerElement.classList.contains('manifest-recovered')) {
+      // Orange color for recovered manifests
+      playProgressControl.style.backgroundColor = '#FF6B35';
+      playProgressControl.style.color = '#FF6B35';
+    } else {
+      // Use the original segment color (blue for passed, red for failed, gray for unknown)
+      playProgressControl.style.backgroundColor = lastSegment.style.backgroundColor;
+      playProgressControl.style.color = lastSegment.style.backgroundColor;
+    }
 
     //Update the width of the segments
     let isVideoSegmentInvalid = false;
@@ -157,6 +166,11 @@ let createTimelineSegment = function (
         segmentProgressPercentage,
       );
       segment.style.width = segmentProgressPercentage + '%';
+
+      // Override segment color for recovered manifests
+      if (videoPlayerElement && videoPlayerElement.classList.contains('manifest-recovered')) {
+        segment.style.backgroundColor = '#FF6B35'; // Orange color for recovered manifests
+      }
 
       //Set the z-index so that segments appear in order of creation
       segment.style.zIndex = numSegments;

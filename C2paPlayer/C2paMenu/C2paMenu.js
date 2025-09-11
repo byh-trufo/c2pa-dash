@@ -96,12 +96,18 @@ export var C2PAMenu = function () {
         if (itemName == 'LOCATION') {
           longitude =
             activeManifest?.assertions.get('stds.exif')[0]?.data[
-              'EXIF:GPSLatitude'
+              'EXIF:GPSLongitude'
             ];
           latitude =
             activeManifest?.assertions.get('stds.exif')[0]?.data[
               'EXIF:GPSLatitude'
             ];
+          
+          // Add null checks and return N/A if either coordinate is missing
+          if (longitude == null || latitude == null) {
+            return 'N/A';
+          }
+          
           return [parseFloat(longitude), parseFloat(latitude)] ?? null;
         }
         if (itemName == 'WEBSITE') {
