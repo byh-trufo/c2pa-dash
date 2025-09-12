@@ -4,7 +4,7 @@
  */
 class ManifestRecoveryService {
     constructor() {
-        this.apiUrl = 'http://34.39.33.119:8080';
+        this.apiUrl = 'https://c2pa-hashapi.videntifier.io';
     }
 
     /**
